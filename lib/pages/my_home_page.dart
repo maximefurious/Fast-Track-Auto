@@ -5,6 +5,7 @@ import 'package:furious_app/widget/car_info_widget.dart';
 import 'package:furious_app/widget/line_chart_widget.dart';
 
 class MyHomePage extends StatelessWidget {
+  final int isDark;
   final String vehiculeTitle;
   final String vehiculeImmatriculation;
   final String vehiculeDateConstructeur;
@@ -21,6 +22,7 @@ class MyHomePage extends StatelessWidget {
     this.vehiculeCarburant,
     this.entList,
     this.compteurList,
+    this.isDark,
   );
 
   // TODO : Faire un bloque de rappel des entretiens réguliers
@@ -48,8 +50,9 @@ class MyHomePage extends StatelessWidget {
             vehiculeCarburant,
             entList,
             compteurList,
+            isDark,
           ),
-          const LineChartWidget(),
+          LineChartWidget(isDark),
         ],
       ),
     );

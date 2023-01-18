@@ -4,10 +4,11 @@ import 'package:furious_app/pages/entretien_item.dart';
 import '../composant/Entretien.dart';
 
 class EntretienList extends StatelessWidget {
-  final List<Entretien> entretienList;
   final Function deleteEnt;
+  final int isDark;
+  final List<Entretien> entretienList;
 
-  EntretienList(this.entretienList, this.deleteEnt);
+  EntretienList(this.entretienList, this.deleteEnt, this.isDark);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,11 @@ class EntretienList extends StatelessWidget {
             children: [
               Text(
                 'Aucun entretien',
-                style: Theme.of(context).textTheme.headline6,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDark == 1 ? Colors.white : Colors.black,
+                ),
               ),
             ],
           )
@@ -27,6 +32,7 @@ class EntretienList extends StatelessWidget {
                       key: ValueKey(ent.id),
                       entretien: ent,
                       deleteEnt: deleteEnt,
+                      isDark: isDark,
                     ))
                 .toList(),
           );

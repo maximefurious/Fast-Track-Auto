@@ -8,8 +8,9 @@ import '../composant/Entretien.dart';
 class CompteurList extends StatelessWidget {
   final List<Compteur> compteurList;
   final Function deleteCompteur;
+  final int isDark;
 
-  CompteurList(this.compteurList, this.deleteCompteur);
+  CompteurList(this.compteurList, this.deleteCompteur, this.isDark);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,11 @@ class CompteurList extends StatelessWidget {
             children: [
               Text(
                 'Aucun Kilometrage enregistré',
-                style: Theme.of(context).textTheme.headline6,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDark == 1 ? Colors.white : Colors.black,
+                ), 
               ),
             ],
           )
@@ -29,6 +34,7 @@ class CompteurList extends StatelessWidget {
                       key: ValueKey(compteur.id),
                       compteur: compteur,
                       deleteCompteur: deleteCompteur,
+                      isDark: isDark,
                     ))
                 .toList(),
           );

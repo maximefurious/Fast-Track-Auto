@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import 'package:furious_app/widget/compteur_list.dart';
 import 'package:furious_app/widget/new_compteur.dart';
 import 'package:furious_app/widget/new_entretien.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   // locked the app in portrait mode
@@ -31,7 +33,7 @@ Future<Voiture> fetchCarData(immatriculation) async {
   if (response.statusCode == 200) {
     return Voiture.fromJson(jsonDecode(response.body));
   } else {
-    throw Exception('Failed to load car data');
+    throw Exception('Echec de la récupération des données');
   }
 }
 
@@ -41,12 +43,12 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 }
-
 class _MyAppState extends State<MyApp> {
   final List<Entretien> _entretienList = [];
   final List<Compteur> _compteurList = [];
   late Future<Voiture> futureVoiture;
   int _index = 0;
+  int _isDark = 0;
 
   String vehiculeTitle = '';
   String vehiculeImmatriculation = '';
@@ -67,11 +69,24 @@ class _MyAppState extends State<MyApp> {
         vehiculeCarburant = value.carburant;
       });
     });
+    initSharedPrefs();
+  }
+
+  void initSharedPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _isDark = prefs.getInt('isDark') ?? 0;
   }
 
   void _setCurrentIndex(int index) {
     setState(() {
       _index = index;
+    });
+  }
+
+  void _setIsDark(bool isDark) {
+    // save the value in shared preferences
+    setState(() {
+      isDark ? _isDark = 1 : _isDark = 0;
     });
   }
 
@@ -131,7 +146,7 @@ class _MyAppState extends State<MyApp> {
       builder: (_) {
         return GestureDetector(
           onTap: () {},
-          child: NewEntretien(_addNewEntretien),
+          child: NewEntretien(_addNewEntretien, _isDark),
           behavior: HitTestBehavior.opaque,
         );
       },
@@ -144,7 +159,7 @@ class _MyAppState extends State<MyApp> {
       builder: (_) {
         return GestureDetector(
           onTap: () {},
-          child: NewCompteur(_addNewCompteur),
+          child: NewCompteur(_addNewCompteur, _isDark),
           behavior: HitTestBehavior.opaque,
         );
       },
@@ -153,14 +168,18 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final entListWidget = EntretienList(_entretienList, _deleteEntretien);
-    final compteurListWidget = CompteurList(_compteurList, _deleteCompteur);
+    final entListWidget = EntretienList(_entretienList, _deleteEntretien, _isDark);
+    final compteurListWidget = CompteurList(_compteurList, _deleteCompteur, _isDark);
+
     return MaterialApp(
       home: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Container(
           height: double.infinity,
-          color: const Color(0xCCCCCCCC),
+          color: [
+            Color(0xFFE5E5E5),
+            Colors.grey[800],
+          ][_isDark],
           child: [
             MyHomePage(
               vehiculeTitle,
@@ -170,20 +189,28 @@ class _MyAppState extends State<MyApp> {
               vehiculeCarburant,
               _entretienList,
               _compteurList,
+              _isDark,
             ),
             EntretienPage(
               entListWidget,
               _startAddNewEntretien,
+              _isDark,
             ),
             CompteurPage(
               compteurListWidget,
               _startAddNewCompteur,
+              _isDark,
             ),
-            AccountPage(),
+            AccountPage(_setIsDark, _isDark),
           ][_index],
         ),
         bottomNavigationBar: Theme(
-            data: Theme.of(context).copyWith(),
+            data: Theme.of(context).copyWith(
+              canvasColor: [
+                Colors.white,
+                Colors.grey[900],
+              ][_isDark],
+            ),
             child: BottomNavigationBar(
               currentIndex: _index,
               onTap: (index) => _setCurrentIndex(index),

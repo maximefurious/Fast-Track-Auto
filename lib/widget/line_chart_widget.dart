@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class LineChartWidget extends StatefulWidget {
-  const LineChartWidget({Key? key}) : super(key: key);
+  final int isDark;
+
+  LineChartWidget(this.isDark);
 
   @override
   State<LineChartWidget> createState() => _LineChartWidgetState();
@@ -18,6 +20,10 @@ class _LineChartWidgetState extends State<LineChartWidget> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: widget.isDark == 1 ? Colors.grey[900] : Colors.white,
+        ),
         padding: const EdgeInsets.all(10),
         height: MediaQuery.of(context).size.height * 0.3,
         width: MediaQuery.of(context).size.width,
@@ -30,6 +36,49 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             gridData: FlGridData(
               show: true,
               drawVerticalLine: true,
+            ),
+            titlesData: FlTitlesData(
+              show: true,
+              bottomTitles: SideTitles(
+                showTitles: true,
+                getTextStyles: (context, value) => TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+                // Permet de customiser les titres sur les cotés pour évité le surplu d'information
+                getTitles: (value) {
+                  switch (value.toInt()) {
+                    case 2:
+                      return '20000';
+                    case 5:
+                      return '50000';
+                    case 8:
+                      return '80000';
+                  }
+                  return '';
+                },
+              ),
+              leftTitles: SideTitles(
+                showTitles: true,
+                getTextStyles: (context, value) => TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+                // Permet de customiser les titres sur les cotés pour évité le surplu d'information
+                getTitles: (value) {
+                  switch (value.toInt()) {
+                    case 1:
+                      return '1';
+                    case 3:
+                      return '3';
+                    case 5:
+                      return '5';
+                  }
+                  return '';
+                },
+              ),
             ),
             lineBarsData: [
               LineChartBarData(

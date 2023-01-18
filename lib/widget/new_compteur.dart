@@ -4,8 +4,9 @@ import '../widget/adaptative_flat_button.dart';
 
 class NewCompteur extends StatefulWidget {
   final Function addCompteur;
+  final int isDark;
 
-  NewCompteur(this.addCompteur);
+  NewCompteur(this.addCompteur, this.isDark);
 
   @override
   _NewCompteurState createState() => _NewCompteurState();
@@ -88,64 +89,98 @@ class _NewCompteurState extends State<NewCompteur> {
     return SingleChildScrollView(
       child: Form(
         key: globalCtrl,
-        child: Card(
-          elevation: 5,
-          child: Container(
-            padding: EdgeInsets.only(
-              top: 10,
-              left: 10,
-              right: 10,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 10,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Kilometrage'),
-                  controller: _kilometrageController,
-                  keyboardType: TextInputType.number,
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,
+        child: Container(
+          decoration: BoxDecoration(
+            color: widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+          ),
+          padding: EdgeInsets.only(
+            top: 10,
+            left: 10,
+            right: 10,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Kilometrage',
+                  labelStyle: TextStyle(
+                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  ),
                 ),
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Kilometrage Parcouru'),
-                  controller: _kilometrageParcouruController,
-                  keyboardType: TextInputType.number,
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,
+                controller: _kilometrageController,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
                 ),
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Moyenne Consommation'),
-                  controller: _moyConsommationController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,                  
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Kilometrage Parcouru',
+                  labelStyle: TextStyle(
+                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  ),
                 ),
-                SizedBox(
-                  height: 70,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _selectedDate == null
-                              ? 'Pas de date choisie !'
-                              : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                controller: _kilometrageParcouruController,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                ),
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Moyenne Consommation',
+                  labelStyle: TextStyle(
+                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  ),
+                ),
+                controller: _moyConsommationController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                ),
+              ),
+              SizedBox(
+                height: 70,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'Pas de date choisie !'
+                            : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                        style: TextStyle(
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black,
                         ),
                       ),
-                      AdaptiveFlatButton('Choisir Date', _presentDatePicker),
-                    ],
-                  ),
+                    ),
+                    AdaptiveFlatButton('Choisir Date', _presentDatePicker),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: _submitData,
-                  child: const Text('Ajouter Kilomètrage'),
-                  style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).primaryColor,
-                    onPrimary: Theme.of(context).textTheme.button!.color,
-                  ),
+              ),
+              ElevatedButton(
+                onPressed: _submitData,
+                child: Text(
+                  'Ajouter Kilomètrage',
+                  style: TextStyle(
+                      color: widget.isDark == 1 ? Colors.black : Colors.white),
                 ),
-              ],
-            ),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor:
+                      Theme.of(context).textTheme.labelLarge!.color,
+                  backgroundColor: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
           ),
         ),
       ),

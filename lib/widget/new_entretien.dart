@@ -4,8 +4,9 @@ import '../widget/adaptative_flat_button.dart';
 
 class NewEntretien extends StatefulWidget {
   final Function addEntretien;
+  final int isDark;
 
-  NewEntretien(this.addEntretien);
+  NewEntretien(this.addEntretien, this.isDark);
 
   @override
   _NewEntretienState createState() => _NewEntretienState();
@@ -86,63 +87,91 @@ class _NewEntretienState extends State<NewEntretien> {
     return SingleChildScrollView(
       child: Form(
         key: globalCtrl,
-        child: Card(
-          elevation: 5,
-          child: Container(
-            padding: EdgeInsets.only(
-              top: 10,
-              left: 10,
-              right: 10,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 10,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Type'),
-                  controller: _typeController,
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,
+        child: Container(
+          decoration: BoxDecoration(
+            color: widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+          ),
+          padding: EdgeInsets.only(
+            top: 10,
+            left: 10,
+            right: 10,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Type',
+                  labelStyle: TextStyle(
+                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  ),
                 ),
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Prix'),
-                  controller: _prixController,
-                  keyboardType: TextInputType.number,
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,
+                controller: _typeController,
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
                 ),
-                TextField(
-                  decoration: const InputDecoration(labelText: 'Kilometrage'),
-                  controller: _kilometrageController,
-                  keyboardType: TextInputType.number,
-                  onSubmitted: (_) => _submitData(),
-                  autofocus: true,                  
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Prix',
+                  labelStyle: TextStyle(
+                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  ),
                 ),
-                SizedBox(
-                  height: 70,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _selectedDate == null
-                              ? 'No Date Chosen!'
-                              : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                controller: _prixController,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                ),
+              ),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Kilometrage',
+                  labelStyle: TextStyle(
+                      color: widget.isDark == 1 ? Colors.white : Colors.black),
+                ),
+                controller: _kilometrageController,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _submitData(),
+                autofocus: true,
+                style: TextStyle(
+                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                ),
+              ),
+              SizedBox(
+                height: 70,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'No Date Chosen!'
+                            : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                        style: TextStyle(
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black,
                         ),
                       ),
-                      AdaptiveFlatButton('Choisir Date', _presentDatePicker),
-                    ],
-                  ),
+                    ),
+                    AdaptiveFlatButton('Choisir Date', _presentDatePicker),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: _submitData,
-                  child: const Text('Ajouter Entretien'),
-                  style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).primaryColor,
-                    onPrimary: Theme.of(context).textTheme.button!.color,
-                  ),
+              ),
+              ElevatedButton(
+                onPressed: _submitData,
+                child: const Text('Ajouter Entretien'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor:
+                      Theme.of(context).textTheme.labelLarge!.color,
+                  backgroundColor: Theme.of(context).primaryColor,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

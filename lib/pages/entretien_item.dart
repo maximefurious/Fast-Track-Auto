@@ -7,10 +7,12 @@ class EntretienItem extends StatefulWidget {
     Key? key,
     @required this.entretien,
     @required this.deleteEnt,
+    @required this.isDark,
   }) : super(key: key);
 
-  final Entretien? entretien;
   final Function? deleteEnt;
+  final Entretien? entretien;
+  final int? isDark;
 
   @override
   State<EntretienItem> createState() => _EntretienItemState();
@@ -40,7 +42,11 @@ class _EntretienItemState extends State<EntretienItem> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Padding(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: widget.isDark == 1 ? Colors.grey[900] : Colors.white,
+        ),
         padding: const EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,23 +58,39 @@ class _EntretienItemState extends State<EntretienItem> {
                   children: [
                     Text(
                       widget.entretien!.type + ' :',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black),
                     ),
                     Text(
                       widget.entretien!.prix.toString() + '€',
-                      style: const TextStyle(fontSize: 18),
+                      style: TextStyle(
+                          fontSize: 18,
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black),
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    Text(_formatedDate),
+                    Text(
+                      _formatedDate,
+                      style: TextStyle(
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    Text(widget.entretien!.kilometrage.toString() + ' km'),
+                    Text(
+                      widget.entretien!.kilometrage.toString() + ' km',
+                      style: TextStyle(
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black),
+                    ),
                   ],
                 ),
               ],
@@ -79,21 +101,38 @@ class _EntretienItemState extends State<EntretienItem> {
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Etes vous sur ?'),
-                    content: const Text(
-                        'Voulez-vous vraiment supprimer cette entretien de la liste ?'),
+                    backgroundColor:
+                        widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+                    title: Text(
+                      'Etes vous sur ?',
+                      style: TextStyle(
+                          color:
+                              widget.isDark == 1 ? Colors.white : Colors.black),
+                    ),
+                    content: Text(
+                        'Voulez-vous vraiment supprimer cette entretien de la liste ?',
+                        style: TextStyle(
+                            color: widget.isDark == 1
+                                ? Colors.white
+                                : Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Navigator.of(ctx).pop(false);
                         },
-                        child: const Text('Non'),
+                        child: Text(
+                          'Non',
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.of(ctx).pop(true);
                         },
-                        child: const Text('Oui'),
+                        child: Text(
+                          'Oui',
+                          style: TextStyle(color: Colors.green),
+                        ),
                       ),
                     ],
                   ),
@@ -104,7 +143,7 @@ class _EntretienItemState extends State<EntretienItem> {
                 });
               },
               icon: const Icon(Icons.delete),
-              color: Theme.of(context).errorColor,
+              color: Theme.of(context).colorScheme.error,
               iconSize: MediaQuery.of(context).size.width * 0.08,
             ),
           ],
