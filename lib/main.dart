@@ -43,6 +43,7 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 }
+
 class _MyAppState extends State<MyApp> {
   final List<Entretien> _entretienList = [];
   final List<Compteur> _compteurList = [];
@@ -55,6 +56,9 @@ class _MyAppState extends State<MyApp> {
   String vehiculeDateConstructeur = '';
   String vehiculeDateMiseEnCirculation = '';
   String vehiculeCarburant = '';
+
+  Color _textColor = Colors.black;
+  Color _backgroundColor = Colors.white;
 
   @override
   void initState() {
@@ -72,6 +76,18 @@ class _MyAppState extends State<MyApp> {
     initSharedPrefs();
   }
 
+  void _updateData() {
+    futureVoiture = fetchCarData(vehiculeImmatriculation);
+    futureVoiture.then((value) {
+      setState(() {
+        vehiculeTitle = value.title;
+        vehiculeDateConstructeur = value.dateConstructeur;
+        vehiculeDateMiseEnCirculation = value.dateMiseEnCirculation;
+        vehiculeCarburant = value.carburant;
+      });
+    });
+  }
+
   void initSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _isDark = prefs.getInt('isDark') ?? 0;
@@ -87,15 +103,19 @@ class _MyAppState extends State<MyApp> {
     // save the value in shared preferences
     setState(() {
       isDark ? _isDark = 1 : _isDark = 0;
+      _textColor = isDark ? Colors.white : Colors.black;
+      _backgroundColor = isDark ? Colors.grey[900]! : Colors.white;
+    });
+  }
+
+  void _setVehiculeImmatriculation(String immatriculation) {
+    setState(() {
+      vehiculeImmatriculation = immatriculation.toUpperCase();
     });
   }
 
   void _addNewEntretien(
-    int newKilometrage,
-    String newType,
-    double newPrix,
-    DateTime newDate,
-  ) {
+      int newKilometrage, String newType, double newPrix, DateTime newDate) {
     final newEntretien = Entretien(
       id: DateTime.now().toString(),
       kilometrage: newKilometrage,
@@ -109,12 +129,8 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _addNewCompteur(
-    int newKilometrage,
-    DateTime newDate,
-    int newKilometrageParcouru,
-    double newMoyConsommation,
-  ) {
+  void _addNewCompteur(int newKilometrage, DateTime newDate,
+      int newKilometrageParcouru, double newMoyConsommation) {
     final newCompteur = Compteur(
       id: DateTime.now().toString(),
       kilometrage: newKilometrage,
@@ -168,8 +184,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final entListWidget = EntretienList(_entretienList, _deleteEntretien, _isDark);
-    final compteurListWidget = CompteurList(_compteurList, _deleteCompteur, _isDark);
+    final entListWidget =
+        EntretienList(_entretienList, _deleteEntretien, _isDark);
+    final compteurListWidget =
+        CompteurList(_compteurList, _deleteCompteur, _isDark);
 
     return MaterialApp(
       home: Scaffold(
@@ -177,7 +195,7 @@ class _MyAppState extends State<MyApp> {
         body: Container(
           height: double.infinity,
           color: [
-            Color(0xFFE5E5E5),
+            const Color(0xFFE5E5E5),
             Colors.grey[800],
           ][_isDark],
           child: [
@@ -201,42 +219,43 @@ class _MyAppState extends State<MyApp> {
               _startAddNewCompteur,
               _isDark,
             ),
-            AccountPage(_setIsDark, _isDark),
+            AccountPage(_setIsDark, _setVehiculeImmatriculation, _updateData,
+                _isDark, vehiculeImmatriculation, _textColor, _backgroundColor),
           ][_index],
         ),
         bottomNavigationBar: Theme(
-            data: Theme.of(context).copyWith(
-              canvasColor: [
-                Colors.white,
-                Colors.grey[900],
-              ][_isDark],
-            ),
-            child: BottomNavigationBar(
-              currentIndex: _index,
-              onTap: (index) => _setCurrentIndex(index),
-              selectedItemColor: Colors.deepPurpleAccent,
-              unselectedItemColor: Colors.grey,
-              elevation: 5,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.car_repair),
-                  label: 'Entretien',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.speed),
-                  label: 'Kilomètrage',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.account_circle),
-                  label: 'Account',
-                ),
-              ],
-            )),
-        // make texte colors to white
+          data: Theme.of(context).copyWith(
+            canvasColor: [
+              Colors.white,
+              Colors.grey[900],
+            ][_isDark],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (index) => _setCurrentIndex(index),
+            selectedItemColor: Colors.deepPurpleAccent,
+            unselectedItemColor: Colors.grey,
+            elevation: 5,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.car_repair),
+                label: 'Entretien',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.speed),
+                label: 'Kilomètrage',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_circle),
+                label: 'Account',
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
