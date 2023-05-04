@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:furious_app/composant/Compteur.dart';
+import 'package:furious_app/composant/Entretien.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:furious_app/methods/mobile.dart';
 
 class AccountPage extends StatefulWidget {
   final Function setIsDark;
@@ -8,12 +11,31 @@ class AccountPage extends StatefulWidget {
   final Function updateData;
   final Color textcolor;
   final Color backgroundcolor;
+  final String vehiculeTitle;
   final String immatriculation;
-  final int isDark;
+  final String vehiculeCylinder;
+  final String vehiculeDateMiseEnCirculation;
+  final String vehiculeCarburant;
+  final bool isDark;
+  final List<Entretien> _entretienList;
+  final List<Compteur> _compteurList;
 
-  AccountPage(this.setIsDark, this.setImmatriculation, this.updateData,
-      this.isDark, this.immatriculation, this.textcolor, this.backgroundcolor);
-
+  const AccountPage(
+      this.setIsDark,
+      this.setImmatriculation,
+      this.updateData,
+      this.isDark,
+      this.immatriculation,
+      this.textcolor,
+      this.backgroundcolor,
+      this.vehiculeTitle,
+      this.vehiculeCylinder,
+      this.vehiculeDateMiseEnCirculation,
+      this.vehiculeCarburant,
+      this._entretienList,
+      this._compteurList,
+      {Key? key})
+      : super(key: key);
   @override
   State<AccountPage> createState() => _AccountPageState();
 }
@@ -28,23 +50,36 @@ class _AccountPageState extends State<AccountPage> {
     Navigator.of(context).pop();
   }
 
+  TextStyle _buildTextStyle() {
+    return TextStyle(fontSize: 16, color: widget.textcolor);
+  }
+
+  ListTile _buildDarkModeSwitch() {
+    return ListTile(
+      title: Text('Theme sombre', style: _buildTextStyle()),
+      tileColor: widget.backgroundcolor,
+      trailing: Switch(
+        value: widget.isDark,
+        thumbIcon: MaterialStateProperty.all(
+          widget.isDark
+              ? const Icon(Icons.brightness_2, color: Colors.yellow)
+              : const Icon(Icons.sunny, color: Colors.black),
+        ),
+        activeTrackColor: Colors.blue[100],
+        onChanged: (value) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isDark', value);
+          widget.setIsDark(value);
+        },
+      ),
+    );
+  }
+
   ListTile _buildImmatriculationListTile() {
     return ListTile(
-      title: Text(
-        'Immatriculation',
-        style: TextStyle(
-          fontSize: 16,
-          color: widget.textcolor,
-        ),
-      ),
+      title: Text('Immatriculation', style: _buildTextStyle()),
       tileColor: widget.backgroundcolor,
-      trailing: Text(
-        widget.immatriculation,
-        style: TextStyle(
-          fontSize: 16,
-          color: widget.textcolor,
-        ),
-      ),
+      trailing: Text(widget.immatriculation, style: _buildTextStyle()),
       onTap: () => {
         showDialog(
           context: context,
@@ -54,63 +89,31 @@ class _AccountPageState extends State<AccountPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               backgroundColor: widget.backgroundcolor,
-              title: Text(
-                'Immatriculation',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: widget.textcolor,
-                ),
-              ),
+              title: Text('Immatriculation', style: _buildTextStyle()),
               content: Form(
                 key: _formKey,
                 child: TextFormField(
                   initialValue: widget.immatriculation,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: widget.textcolor,
-                  ),
+                  style: _buildTextStyle(),
                   decoration: InputDecoration(
                     hintText: 'Immatriculation',
-                    hintStyle: TextStyle(
-                      fontSize: 16,
-                      color: widget.textcolor,
-                    ),
+                    hintStyle: _buildTextStyle(),
                   ),
-                  onChanged: (value) {
-                    newImmatriculation = value;
-                  },
+                  onChanged: (value) => newImmatriculation = value,
                 ),
               ),
               actions: <Widget>[
                 TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: widget.textcolor,
-                  ),
-                  child: Text(
-                    'Annuler',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: widget.textcolor,
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  style:
+                      TextButton.styleFrom(foregroundColor: widget.textcolor),
+                  child: Text('Annuler', style: _buildTextStyle()),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: widget.textcolor,
-                  ),
-                  child: Text(
-                    'Valider',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: widget.textcolor,
-                    ),
-                  ),
-                  onPressed: () {
-                    _submitImmatriculation(newImmatriculation);
-                  },
+                  style:
+                      TextButton.styleFrom(foregroundColor: widget.textcolor),
+                  child: Text('Valider', style: _buildTextStyle()),
+                  onPressed: () => _submitImmatriculation(newImmatriculation),
                 ),
               ],
             );
@@ -118,6 +121,150 @@ class _AccountPageState extends State<AccountPage> {
         ),
       },
     );
+  }
+
+  ListTile _buildGeneratePDFButton() {
+    return ListTile(
+      title: Text('Générer PDF', style: _buildTextStyle()),
+      tileColor: widget.backgroundcolor,
+      onTap: () => {
+        _generatePDF(),
+      },
+    );
+  }
+
+  Future<void> _generatePDF() async {
+    PdfDocument document = PdfDocument();
+    final page = document.pages.add();
+
+    page.graphics.drawString(
+      'Fiche technique',
+      PdfStandardFont(PdfFontFamily.helvetica, 30),
+      bounds: Rect.fromLTWH(0, 0, page.getClientSize().width, 50),
+      format: PdfStringFormat(alignment: PdfTextAlignment.center),
+    );
+
+    page.graphics.drawString(
+      'Véhicule : ${widget.vehiculeTitle}',
+      PdfStandardFont(PdfFontFamily.helvetica, 20),
+      bounds: Rect.fromLTWH(0, 50, page.getClientSize().width, 30),
+      format: PdfStringFormat(alignment: PdfTextAlignment.left),
+    );
+
+    page.graphics.drawString(
+      'Immatriculation : ${widget.immatriculation}',
+      PdfStandardFont(PdfFontFamily.helvetica, 20),
+      bounds: Rect.fromLTWH(0, 80, page.getClientSize().width, 30),
+      format: PdfStringFormat(alignment: PdfTextAlignment.left),
+    );
+
+    page.graphics.drawString(
+      'Cylindre : ${widget.vehiculeCylinder}',
+      PdfStandardFont(PdfFontFamily.helvetica, 20),
+      bounds: Rect.fromLTWH(0, 110, page.getClientSize().width, 30),
+      format: PdfStringFormat(alignment: PdfTextAlignment.left),
+    );
+
+    page.graphics.drawString(
+      'Date de mise en circulation : ${widget.vehiculeDateMiseEnCirculation}',
+      PdfStandardFont(PdfFontFamily.helvetica, 20),
+      bounds: Rect.fromLTWH(0, 140, page.getClientSize().width, 30),
+      format: PdfStringFormat(alignment: PdfTextAlignment.left),
+    );
+
+    page.graphics.drawString(
+      'Carburant : ${widget.vehiculeCarburant}',
+      PdfStandardFont(PdfFontFamily.helvetica, 20),
+      bounds: Rect.fromLTWH(0, 170, page.getClientSize().width, 30),
+      format: PdfStringFormat(alignment: PdfTextAlignment.left),
+    );
+
+    page.graphics.drawString(
+      'Historique Kilomètrage',
+      PdfStandardFont(PdfFontFamily.helvetica, 30),
+      bounds: Rect.fromLTWH(0, 200, page.getClientSize().width, 50),
+      format: PdfStringFormat(alignment: PdfTextAlignment.center),
+    );
+
+    PdfGrid grid = PdfGrid();
+    grid.style.cellPadding = PdfPaddings(left: 5, right: 5);
+    grid.style.font = PdfStandardFont(PdfFontFamily.helvetica, 20);
+
+    int totalCellSize = 50;
+
+    grid.columns.add(count: 4);
+    grid.headers.add(1);
+
+    PdfGridRow header = grid.headers[0];
+    header.cells[0].value = 'Kilométrage';
+    header.cells[1].value = 'Kilometre parcouru';
+    header.cells[2].value = 'Litres/100km';
+    header.cells[3].value = 'Date';
+
+    PdfGridRow row = grid.rows.add();
+    // foreach Compteur in compteurList
+    for (int i = 0; i < widget._compteurList.length; i++) {
+      row.cells[0].value = "${widget._compteurList[i].kilometrage} km";
+      row.cells[1].value = "${widget._compteurList[i].kilometrageParcouru} km";
+      row.cells[2].value = "${widget._compteurList[i].moyConsommation} L/100km";
+      row.cells[3].value =
+          "${widget._compteurList[i].date.day}/${widget._compteurList[i].date.month}/${widget._compteurList[i].date.year}";
+      totalCellSize += 50;
+      if (i < widget._compteurList.length - 1) {
+        row = grid.rows.add();
+      }
+    }
+
+    grid.draw(
+      page: page,
+      bounds: Rect.fromLTWH(0, 250, page.getClientSize().width, 0),
+    );
+
+    page.graphics.drawString(
+      'Historique Des Entretiens',
+      PdfStandardFont(PdfFontFamily.helvetica, 30),
+      bounds: Rect.fromLTWH(
+          0, 250 + totalCellSize.toDouble(), page.getClientSize().width, 50),
+      format: PdfStringFormat(alignment: PdfTextAlignment.center),
+    );
+
+    // generate another grid
+    PdfGrid grid2 = PdfGrid();
+    grid2.style.cellPadding = PdfPaddings(left: 5, right: 5);
+    grid2.style.font = PdfStandardFont(PdfFontFamily.helvetica, 20);
+
+    grid2.columns.add(count: 4);
+    grid2.headers.add(1);
+
+    PdfGridRow header2 = grid2.headers[0];
+    header2.cells[0].value = 'Type';
+    header2.cells[1].value = 'Kilometrage';
+    header2.cells[2].value = 'Prix';
+    header2.cells[3].value = 'Date';
+
+    PdfGridRow row2 = grid2.rows.add();
+    // foreach Compteur in compteurList
+    for (int i = 0; i < widget._entretienList.length; i++) {
+      row2.cells[0].value = widget._entretienList[i].type;
+      row2.cells[1].value = "${widget._entretienList[i].kilometrage} km";
+      row2.cells[2].value = "${widget._entretienList[i].prix} €";
+      row2.cells[3].value =
+          "${widget._entretienList[i].date.day}/${widget._entretienList[i].date.month}/${widget._entretienList[i].date.year}";
+      if (i < widget._entretienList.length - 1) {
+        row2 = grid2.rows.add();
+      }
+    }
+
+    grid2.draw(
+      page: page,
+      bounds: Rect.fromLTWH(
+          0, 300 + totalCellSize.toDouble(), page.getClientSize().width, 0),
+    );
+
+    final List<int> bytes = document.saveSync();
+    document.dispose();
+
+    saveAndLaunchFile(bytes, 'Output.pdf');
   }
 
   @override
@@ -128,54 +275,17 @@ class _AccountPageState extends State<AccountPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Paramètres',
-              style: TextStyle(
-                fontSize: 20,
-                color: widget.textcolor,
-              ),
-            ),
+            child: Text('Paramètres',
+                style: TextStyle(fontSize: 20, color: widget.textcolor)),
           ),
           Card(
             child: Column(
               children: <Widget>[
-                ListTile(
-                  title: Text(
-                    'Theme sombre',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: widget.textcolor,
-                    ),
-                  ),
-                  tileColor:
-                      widget.backgroundcolor,
-                  trailing: Switch(
-                    value: widget.isDark == 1 ? true : false,
-                    thumbIcon: MaterialStateProperty.all(
-                      widget.isDark == 1
-                          ? const Icon(
-                              Icons.brightness_2,
-                              color: Colors.yellow,
-                            )
-                          : const Icon(
-                              Icons.sunny,
-                              color: Colors.black,
-                            ),
-                    ),
-                    activeTrackColor: Colors.blue[100],
-                    onChanged: (value) async {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      await prefs.setInt('isDark', value ? 1 : 0);
-                      widget.setIsDark(value);
-                    },
-                  ),
-                ),
-                Divider(
-                  height: 1,
-                  color: widget.textcolor,
-                ),
+                _buildDarkModeSwitch(),
+                Divider(height: 1, color: widget.textcolor),
                 _buildImmatriculationListTile(),
+                Divider(height: 1, color: widget.textcolor),
+                _buildGeneratePDFButton(),
               ],
             ),
           ),

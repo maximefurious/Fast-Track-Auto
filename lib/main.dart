@@ -1,22 +1,23 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:furious_app/bluetooth/BluetoothScanPage.dart';
 import 'package:furious_app/composant/Compteur.dart';
 import 'package:furious_app/composant/Entretien.dart';
 import 'package:furious_app/composant/Voiture.dart';
 import 'package:furious_app/pages/account_page.dart';
-import 'package:furious_app/pages/compteur_page.dart';
-import 'package:furious_app/pages/entretien_list.dart';
-import 'package:furious_app/pages/entretien_page.dart';
+import 'package:furious_app/pages/compteur/compteur_page.dart';
+import 'package:furious_app/pages/entretien/entretien_list.dart';
+import 'package:furious_app/pages/entretien/entretien_page.dart';
 import 'package:furious_app/pages/my_home_page.dart';
-import 'package:furious_app/widget/compteur_list.dart';
-import 'package:furious_app/widget/new_compteur.dart';
-import 'package:furious_app/widget/new_entretien.dart';
+import 'package:furious_app/pages/compteur/compteur_list.dart';
+import 'package:furious_app/pages/compteur/new_compteur.dart';
+import 'package:furious_app/pages/entretien/new_entretien.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 void main() {
   // locked the app in portrait mode
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,14 +28,21 @@ void main() {
 }
 
 Future<Voiture> fetchCarData(immatriculation) async {
+  // https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/FW696-BY?shop=9902&reg-country=FR
   String url =
-      'https://www.mister-auto.com/nwsAjax/Plate?captcha_token=&family_id=0&generic_id=0&category_id=0&locale=fr_FR&device=desktop&pageType=homepage&country=FR&lang=fr&captchaVersion=v3&plate_selector_vof=&immatriculation=';
-  final response = await http.get(Uri.parse(url + immatriculation));
+      'https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/$immatriculation?shop=9902&reg-country=FR';
+
+  final response = await http.get(Uri.parse(url));
   if (response.statusCode == 200) {
-    return Voiture.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception('Echec de la récupération des données');
+    return Voiture.fromJson2(jsonDecode(response.body));
   }
+  return Voiture(
+      id: 0,
+      title: 'Aucune voiture trouvée',
+      immatriculation: immatriculation,
+      cylindrer: 'Inconnue',
+      dateMiseEnCirculation: 'Inconnue',
+      carburant: 'Inconnue');
 }
 
 class MyApp extends StatefulWidget {
@@ -49,26 +57,32 @@ class _MyAppState extends State<MyApp> {
   final List<Compteur> _compteurList = [];
   late Future<Voiture> futureVoiture;
   int _index = 0;
-  int _isDark = 0;
 
   String vehiculeTitle = '';
   String vehiculeImmatriculation = '';
-  String vehiculeDateConstructeur = '';
+  String vehiculeCylinder = '';
   String vehiculeDateMiseEnCirculation = '';
   String vehiculeCarburant = '';
+
+  bool _isDark = false;
 
   Color _textColor = Colors.black;
   Color _backgroundColor = Colors.white;
 
+  BluetoothConnection? connection;
+
   @override
   void initState() {
     super.initState();
+    _requestPermission();
+
+    // TODO Faire une page de configuration pour choisir la voiture
     futureVoiture = fetchCarData('FW-696-BY');
     futureVoiture.then((value) {
       setState(() {
         vehiculeTitle = value.title;
         vehiculeImmatriculation = value.immatriculation;
-        vehiculeDateConstructeur = value.dateConstructeur;
+        vehiculeCylinder = value.cylindrer;
         vehiculeDateMiseEnCirculation = value.dateMiseEnCirculation;
         vehiculeCarburant = value.carburant;
       });
@@ -76,12 +90,19 @@ class _MyAppState extends State<MyApp> {
     initSharedPrefs();
   }
 
+  void _requestPermission() async {
+    await Permission.location.request();
+    await Permission.bluetooth.request();
+    await Permission.bluetoothScan.request();
+    await Permission.bluetoothConnect.request();
+  }
+
   void _updateData() {
     futureVoiture = fetchCarData(vehiculeImmatriculation);
     futureVoiture.then((value) {
       setState(() {
         vehiculeTitle = value.title;
-        vehiculeDateConstructeur = value.dateConstructeur;
+        vehiculeCylinder = value.cylindrer;
         vehiculeDateMiseEnCirculation = value.dateMiseEnCirculation;
         vehiculeCarburant = value.carburant;
       });
@@ -90,7 +111,7 @@ class _MyAppState extends State<MyApp> {
 
   void initSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _isDark = prefs.getInt('isDark') ?? 0;
+    _isDark = prefs.getBool('isDark') ?? false;
   }
 
   void _setCurrentIndex(int index) {
@@ -102,7 +123,7 @@ class _MyAppState extends State<MyApp> {
   void _setIsDark(bool isDark) {
     // save the value in shared preferences
     setState(() {
-      isDark ? _isDark = 1 : _isDark = 0;
+      _isDark = isDark;
       _textColor = isDark ? Colors.white : Colors.black;
       _backgroundColor = isDark ? Colors.grey[900]! : Colors.white;
     });
@@ -115,7 +136,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _addNewEntretien(
-      int newKilometrage, String newType, double newPrix, DateTime newDate) {
+    int newKilometrage, String newType, double newPrix, DateTime newDate) {
     final newEntretien = Entretien(
       id: DateTime.now().toString(),
       kilometrage: newKilometrage,
@@ -162,8 +183,8 @@ class _MyAppState extends State<MyApp> {
       builder: (_) {
         return GestureDetector(
           onTap: () {},
-          child: NewEntretien(_addNewEntretien, _isDark),
           behavior: HitTestBehavior.opaque,
+          child: NewEntretien(_addNewEntretien, _isDark),
         );
       },
     );
@@ -175,11 +196,17 @@ class _MyAppState extends State<MyApp> {
       builder: (_) {
         return GestureDetector(
           onTap: () {},
-          child: NewCompteur(_addNewCompteur, _isDark),
           behavior: HitTestBehavior.opaque,
+          child: NewCompteur(_addNewCompteur, _isDark),
         );
       },
     );
+  }
+
+  void _addBluetoothConnection(connexion) {
+    setState(() {
+      connection = connexion;
+    });
   }
 
   @override
@@ -197,30 +224,51 @@ class _MyAppState extends State<MyApp> {
           color: [
             const Color(0xFFE5E5E5),
             Colors.grey[800],
-          ][_isDark],
+          ][_isDark ? 1 : 0],
           child: [
             MyHomePage(
               vehiculeTitle,
               vehiculeImmatriculation,
-              vehiculeDateConstructeur,
+              vehiculeCylinder,
               vehiculeDateMiseEnCirculation,
               vehiculeCarburant,
               _entretienList,
               _compteurList,
               _isDark,
+              _backgroundColor,
+              connection
             ),
             EntretienPage(
               entListWidget,
               _startAddNewEntretien,
               _isDark,
+              _backgroundColor,
             ),
             CompteurPage(
               compteurListWidget,
               _startAddNewCompteur,
               _isDark,
+              _backgroundColor,
             ),
-            AccountPage(_setIsDark, _setVehiculeImmatriculation, _updateData,
-                _isDark, vehiculeImmatriculation, _textColor, _backgroundColor),
+            AccountPage(
+              _setIsDark,
+              _setVehiculeImmatriculation,
+              _updateData,
+              _isDark,
+              vehiculeImmatriculation,
+              _textColor,
+              _backgroundColor,
+              vehiculeTitle,
+              vehiculeCylinder,
+              vehiculeDateMiseEnCirculation,
+              vehiculeCarburant,
+              _entretienList,
+              _compteurList,
+            ),
+            BluetoothScanPage(
+              _addNewCompteur,
+              _addBluetoothConnection
+            ),
           ][_index],
         ),
         bottomNavigationBar: Theme(
@@ -228,7 +276,7 @@ class _MyAppState extends State<MyApp> {
             canvasColor: [
               Colors.white,
               Colors.grey[900],
-            ][_isDark],
+            ][_isDark ? 1 : 0],
           ),
           child: BottomNavigationBar(
             currentIndex: _index,
@@ -253,6 +301,10 @@ class _MyAppState extends State<MyApp> {
                 icon: Icon(Icons.account_circle),
                 label: 'Account',
               ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              )
             ],
           ),
         ),

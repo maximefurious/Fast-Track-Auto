@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 class EntretienPage extends StatefulWidget {
   final Widget entListWidget;
   final Function startAddNewEntretien;
-  final int isDark;
+  final bool isDark;
+  final Color backgroundColor;
 
-  EntretienPage(this.entListWidget, this.startAddNewEntretien, this.isDark);
+  const EntretienPage(this.entListWidget, this.startAddNewEntretien,
+      this.isDark, this.backgroundColor,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<EntretienPage> createState() => _EntretienPageState();
@@ -13,16 +17,11 @@ class EntretienPage extends StatefulWidget {
 
 class _EntretienPageState extends State<EntretienPage> {
   final globalCtrl = GlobalKey<FormState>();
-  final _searchController = TextEditingController();
-
-  void _submitSearch() {
-    print(_searchController.text);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+      color: widget.isDark ? Colors.grey[800] : Colors.white,
       child: Column(
         children: [
           Expanded(

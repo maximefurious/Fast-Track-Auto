@@ -1,12 +1,14 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
-import '../widget/adaptative_flat_button.dart';
+import '../../widget/adaptative_flat_button.dart';
 
 class NewCompteur extends StatefulWidget {
   final Function addCompteur;
-  final int isDark;
+  final bool isDark;
 
-  NewCompteur(this.addCompteur, this.isDark);
+  const NewCompteur(this.addCompteur, this.isDark, {Key? key}) : super(key: key);
 
   @override
   _NewCompteurState createState() => _NewCompteurState();
@@ -18,10 +20,6 @@ class _NewCompteurState extends State<NewCompteur> {
   final _kilometrageParcouruController = TextEditingController();
   final _moyConsommationController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-
-  _NewCompteurState() {
-    print('Constructor NewCompteur State');
-  }
 
   @override
   void initState() {
@@ -41,8 +39,7 @@ class _NewCompteurState extends State<NewCompteur> {
   void _submitData() {
     if (_kilometrageController.text.isEmpty ||
         _kilometrageParcouruController.text.isEmpty ||
-        _moyConsommationController.text.isEmpty ||
-        _selectedDate == null) {
+        _moyConsommationController.text.isEmpty) {
       return;
     }
     final enteredKilometrage = int.parse(_kilometrageController.text);
@@ -53,8 +50,7 @@ class _NewCompteurState extends State<NewCompteur> {
 
     if (enteredKilometrage <= 0 ||
         enteredKilometrageParcouru <= 0 ||
-        enteredMoyConsommation <= 0 ||
-        _selectedDate == null) {
+        enteredMoyConsommation <= 0) {
       return;
     }
 
@@ -91,7 +87,7 @@ class _NewCompteurState extends State<NewCompteur> {
         key: globalCtrl,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+            color: widget.isDark ? Colors.grey[800] : Colors.white,
           ),
           padding: EdgeInsets.only(
             top: 10,
@@ -106,7 +102,7 @@ class _NewCompteurState extends State<NewCompteur> {
                 decoration: InputDecoration(
                   labelText: 'Kilometrage',
                   labelStyle: TextStyle(
-                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                    color: widget.isDark ? Colors.white : Colors.black,
                   ),
                 ),
                 controller: _kilometrageController,
@@ -114,14 +110,14 @@ class _NewCompteurState extends State<NewCompteur> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Kilometrage Parcouru',
                   labelStyle: TextStyle(
-                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                    color: widget.isDark ? Colors.white : Colors.black,
                   ),
                 ),
                 controller: _kilometrageParcouruController,
@@ -129,14 +125,14 @@ class _NewCompteurState extends State<NewCompteur> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Moyenne Consommation',
                   labelStyle: TextStyle(
-                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                    color: widget.isDark ? Colors.white : Colors.black,
                   ),
                 ),
                 controller: _moyConsommationController,
@@ -145,7 +141,7 @@ class _NewCompteurState extends State<NewCompteur> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               SizedBox(
@@ -154,12 +150,10 @@ class _NewCompteurState extends State<NewCompteur> {
                   children: [
                     Expanded(
                       child: Text(
-                        _selectedDate == null
-                            ? 'Pas de date choisie !'
-                            : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                        'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                         style: TextStyle(
                           color:
-                              widget.isDark == 1 ? Colors.white : Colors.black,
+                              widget.isDark ? Colors.white : Colors.black,
                         ),
                       ),
                     ),
@@ -169,15 +163,15 @@ class _NewCompteurState extends State<NewCompteur> {
               ),
               ElevatedButton(
                 onPressed: _submitData,
-                child: Text(
-                  'Ajouter Kilomètrage',
-                  style: TextStyle(
-                      color: widget.isDark == 1 ? Colors.black : Colors.white),
-                ),
                 style: ElevatedButton.styleFrom(
                   foregroundColor:
                       Theme.of(context).textTheme.labelLarge!.color,
                   backgroundColor: Theme.of(context).primaryColor,
+                ),
+                child: Text(
+                  'Ajouter Kilomètrage',
+                  style: TextStyle(
+                      color: widget.isDark ? Colors.black : Colors.white),
                 ),
               ),
             ],

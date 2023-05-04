@@ -1,12 +1,14 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
-import '../widget/adaptative_flat_button.dart';
+import '../../widget/adaptative_flat_button.dart';
 
 class NewEntretien extends StatefulWidget {
   final Function addEntretien;
-  final int isDark;
+  final bool isDark;
 
-  NewEntretien(this.addEntretien, this.isDark);
+  const NewEntretien(this.addEntretien, this.isDark, {Key? key}) : super(key: key);
 
   @override
   _NewEntretienState createState() => _NewEntretienState();
@@ -18,10 +20,6 @@ class _NewEntretienState extends State<NewEntretien> {
   final _prixController = TextEditingController();
   final _kilometrageController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-
-  _NewEntretienState() {
-    print('Constructor NewEntretien State');
-  }
 
   @override
   void initState() {
@@ -41,8 +39,7 @@ class _NewEntretienState extends State<NewEntretien> {
   void _submitData() {
     if (_typeController.text.isEmpty ||
         _prixController.text.isEmpty ||
-        _kilometrageController.text.isEmpty ||
-        _selectedDate == null) {
+        _kilometrageController.text.isEmpty) {
       return;
     }
     final enteredType = _typeController.text;
@@ -51,8 +48,7 @@ class _NewEntretienState extends State<NewEntretien> {
 
     if (enteredType.isEmpty ||
         enteredPrix <= 0 ||
-        enteredKilometrage <= 0 ||
-        _selectedDate == null) {
+        enteredKilometrage <= 0) {
       return;
     }
 
@@ -89,7 +85,7 @@ class _NewEntretienState extends State<NewEntretien> {
         key: globalCtrl,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.isDark == 1 ? Colors.grey[800] : Colors.white,
+            color: widget.isDark ? Colors.grey[800] : Colors.white,
           ),
           padding: EdgeInsets.only(
             top: 10,
@@ -104,21 +100,21 @@ class _NewEntretienState extends State<NewEntretien> {
                 decoration: InputDecoration(
                   labelText: 'Type',
                   labelStyle: TextStyle(
-                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                    color: widget.isDark ? Colors.white : Colors.black,
                   ),
                 ),
                 controller: _typeController,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Prix',
                   labelStyle: TextStyle(
-                    color: widget.isDark == 1 ? Colors.white : Colors.black,
+                    color: widget.isDark ? Colors.white : Colors.black,
                   ),
                 ),
                 controller: _prixController,
@@ -126,21 +122,21 @@ class _NewEntretienState extends State<NewEntretien> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Kilometrage',
                   labelStyle: TextStyle(
-                      color: widget.isDark == 1 ? Colors.white : Colors.black),
+                      color: widget.isDark ? Colors.white : Colors.black),
                 ),
                 controller: _kilometrageController,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark == 1 ? Colors.white : Colors.black,
+                  color: widget.isDark ? Colors.white : Colors.black,
                 ),
               ),
               SizedBox(
@@ -149,12 +145,10 @@ class _NewEntretienState extends State<NewEntretien> {
                   children: [
                     Expanded(
                       child: Text(
-                        _selectedDate == null
-                            ? 'No Date Chosen!'
-                            : 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                        'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                         style: TextStyle(
                           color:
-                              widget.isDark == 1 ? Colors.white : Colors.black,
+                              widget.isDark ? Colors.white : Colors.black,
                         ),
                       ),
                     ),
@@ -164,12 +158,12 @@ class _NewEntretienState extends State<NewEntretien> {
               ),
               ElevatedButton(
                 onPressed: _submitData,
-                child: const Text('Ajouter Entretien'),
                 style: ElevatedButton.styleFrom(
                   foregroundColor:
                       Theme.of(context).textTheme.labelLarge!.color,
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
+                child: const Text('Ajouter Entretien'),
               ),
             ],
           ),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/pages/entretien_item.dart';
+import 'package:furious_app/pages/entretien/entretien_item.dart';
 
-import '../composant/Entretien.dart';
+import '../../composant/Entretien.dart';
 
 class EntretienList extends StatelessWidget {
   final Function deleteEnt;
-  final int isDark;
+  final bool isDark;
   final List<Entretien> entretienList;
 
-  EntretienList(this.entretienList, this.deleteEnt, this.isDark);
+  const EntretienList(this.entretienList, this.deleteEnt, this.isDark, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class EntretienList extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark == 1 ? Colors.white : Colors.black,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
             ],

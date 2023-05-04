@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:furious_app/composant/Compteur.dart';
-import 'package:furious_app/pages/entretien_item.dart';
-import 'package:furious_app/widget/CompteurItem.dart';
-
-import '../composant/Entretien.dart';
+import 'package:furious_app/pages/compteur/compteur_item.dart';
 
 class CompteurList extends StatelessWidget {
   final List<Compteur> compteurList;
   final Function deleteCompteur;
-  final int isDark;
+  final bool isDark;
 
-  CompteurList(this.compteurList, this.deleteCompteur, this.isDark);
+  const CompteurList(this.compteurList, this.deleteCompteur, this.isDark,
+      {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +22,8 @@ class CompteurList extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark == 1 ? Colors.white : Colors.black,
-                ), 
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
             ],
           )

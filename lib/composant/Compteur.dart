@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 class Compteur {
   final String id;
   final int kilometrage;

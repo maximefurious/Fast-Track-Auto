@@ -3,25 +3,26 @@ import 'package:furious_app/composant/Compteur.dart';
 import 'package:furious_app/composant/Entretien.dart';
 
 class CarInfo extends StatelessWidget {
-  final int isDark;
+  final bool isDark;
   final String vehiculeTitle;
   final String vehiculeImmatriculation;
-  final String vehiculeDateConstructeur;
+  final String vehiculeCylinder;
   final String vehiculeDateMiseEnCirculation;
   final String vehiculeCarburant;
   final List<Compteur> compteurList;
   final List<Entretien> entList;
 
-  CarInfo(
-    this.vehiculeTitle,
-    this.vehiculeImmatriculation,
-    this.vehiculeDateConstructeur,
-    this.vehiculeDateMiseEnCirculation,
-    this.vehiculeCarburant,
-    this.entList,
-    this.compteurList,
-    this.isDark,
-  );
+  const CarInfo(
+      this.vehiculeTitle,
+      this.vehiculeImmatriculation,
+      this.vehiculeCylinder,
+      this.vehiculeDateMiseEnCirculation,
+      this.vehiculeCarburant,
+      this.entList,
+      this.compteurList,
+      this.isDark,
+      {Key? key})
+      : super(key: key);
 
   int get maxKilometrage {
     int max = 0;
@@ -56,7 +57,7 @@ class CarInfo extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: isDark == 1 ? Colors.grey[900] : Colors.white,
+          color: isDark ? Colors.grey[900] : Colors.white,
         ),
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -68,7 +69,10 @@ class CarInfo extends StatelessWidget {
                 child: Text(
                   vehiculeTitle,
                   style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.bold, color: isDark == 1 ? Colors.white : Colors.black),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -82,7 +86,12 @@ class CarInfo extends StatelessWidget {
                         Icons.directions_car,
                         color: Colors.grey,
                       ),
-                      Text(vehiculeImmatriculation, style: TextStyle(color: isDark == 1 ? Colors.white : Colors.black)),
+                      Text(
+                        vehiculeImmatriculation,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -95,7 +104,10 @@ class CarInfo extends StatelessWidget {
                       ),
                       Text(
                         vehiculeCarburant,
-                        style: TextStyle(fontSize: 15, color: isDark == 1 ? Colors.white : Colors.black),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                       ),
                     ],
                   ),
@@ -110,10 +122,15 @@ class CarInfo extends StatelessWidget {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.construction,
+                        Icons.speed,
                         color: Colors.grey,
                       ),
-                      Text(vehiculeDateConstructeur, style: TextStyle(color: isDark == 1 ? Colors.white : Colors.black)),
+                      Text(
+                        vehiculeCylinder,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -126,7 +143,10 @@ class CarInfo extends StatelessWidget {
                       ),
                       Text(
                         vehiculeDateMiseEnCirculation,
-                        style: TextStyle(fontSize: 15, color: isDark == 1 ? Colors.white : Colors.black),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                       ),
                     ],
                   ),
@@ -144,18 +164,29 @@ class CarInfo extends StatelessWidget {
                         Icons.text_snippet,
                         color: Colors.grey,
                       ),
-                      Text(maxKilometrage.toString() + " Km", style: TextStyle(color: isDark == 1 ? Colors.white : Colors.black)),
+                      Text(
+                        "$maxKilometrage Km",
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: Row(
-                    children:  [
+                    children: [
                       const Icon(
                         Icons.bar_chart_sharp,
                         color: Colors.grey,
                       ),
-                      Text(consoMoyenne.toString() + " L/100Km", style: TextStyle(fontSize: 15, color: isDark == 1 ? Colors.white : Colors.black)),
+                      Text(
+                        "$consoMoyenne L/100Km",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                 ),
