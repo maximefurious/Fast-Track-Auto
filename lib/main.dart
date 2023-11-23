@@ -30,7 +30,6 @@ void main() {
 
 Future<Voiture> fetchCarData(immatriculation) async {
   // https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/FW696-BY?shop=9902&reg-country=FR
-  print('Requesting data for $immatriculation');
   // String url = 'https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/external/FW696BY?shop=9902&reg-country=FR';
   String url = 'https://www.mister-auto.com/nwsAjax/Plate?captcha_token=&family_id=0&generic_id=0&category_id=0&locale=fr_FR&device=desktop&pageType=homepage&country=FR&lang=fr&captchaVersion=v3&plate_selector_vof=&immatriculation=fw-696-BY';
   Map<String, String> headers = {
@@ -45,7 +44,6 @@ Future<Voiture> fetchCarData(immatriculation) async {
   if (response.statusCode == 200) {
     return Voiture.fromJson2(jsonDecode(response.body));
   }
-  print('Request failed with status: ${response.statusCode}.');
   return Voiture(
       id: "0",
       title: 'Aucune voiture trouvée',
@@ -134,7 +132,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _setIsDark(bool isDark) {
-    print("Initialisation du thème");
     setState(() {
       _isDark = isDark;
       colorMap['text'] = isDark ? Colors.white : Colors.black;
@@ -149,7 +146,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _setEntretien(String entretienList) {
-    print("Chargement des entretiens depuis le cache");
     if (entretienList == "") return;
     Map<String, dynamic> data = jsonDecode(entretienList);
 
@@ -171,7 +167,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _setCompteur(String compteurList) {
-    print("Chargement des compteurs depuis le cache");
     if (compteurList == "") return;
     Map<String, dynamic> data = jsonDecode(compteurList);
 
