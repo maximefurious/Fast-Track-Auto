@@ -1,26 +1,19 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:furious_app/composant/Compteur.dart';
 import 'package:furious_app/composant/Entretien.dart';
+import 'package:furious_app/widget/box_info_widget.dart';
 
 class CarInfo extends StatelessWidget {
-  final bool isDark;
-  final String vehiculeTitle;
-  final String vehiculeImmatriculation;
-  final String vehiculeCylinder;
-  final String vehiculeDateMiseEnCirculation;
-  final String vehiculeCarburant;
   final List<Compteur> compteurList;
   final List<Entretien> entList;
 
+  final HashMap<String, Color> colorMap;
+  final Map<String, dynamic> vehiculeMap;
+
   const CarInfo(
-      this.vehiculeTitle,
-      this.vehiculeImmatriculation,
-      this.vehiculeCylinder,
-      this.vehiculeDateMiseEnCirculation,
-      this.vehiculeCarburant,
-      this.entList,
-      this.compteurList,
-      this.isDark,
+      this.vehiculeMap, this.entList, this.compteurList, this.colorMap,
       {Key? key})
       : super(key: key);
 
@@ -43,157 +36,98 @@ class CarInfo extends StatelessWidget {
       }
       moyenne = moyenne / (compteurList.length);
     }
+    String moy = moyenne.toStringAsExponential(2);
+    moyenne = double.parse(moy);
     return moyenne;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.all(10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      elevation: 10,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: isDark ? Colors.grey[900] : Colors.white,
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 15),
-              child: Center(
-                child: Text(
-                  vehiculeTitle,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: colorMap['cardColor'],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 5,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                vehiculeMap['title']!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.directions_car,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        vehiculeImmatriculation,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.local_gas_station,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        vehiculeCarburant,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.speed,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        vehiculeCylinder,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.shopping_cart,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        vehiculeDateMiseEnCirculation,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.text_snippet,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        "$maxKilometrage Km",
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.bar_chart_sharp,
-                        color: Colors.grey,
-                      ),
-                      Text(
-                        "$consoMoyenne L/100Km",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              BoxInfoWidget(
+                icon: Icons.directions_car,
+                title: 'Immatriculation',
+                value: vehiculeMap['immatriculation']!,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              BoxInfoWidget(
+                icon: Icons.local_gas_station,
+                title: 'Carburant',
+                value: vehiculeMap['carburant']!,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              BoxInfoWidget(
+                icon: Icons.speed,
+                title: 'Cylindrer',
+                value: vehiculeMap['cylindrer']!,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              BoxInfoWidget(
+                icon: Icons.shopping_cart,
+                title: 'Date de mise en circulation',
+                value: vehiculeMap['dateMiseEnCirculation']!,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BoxInfoWidget(
+                icon: Icons.text_snippet,
+                title: 'Kilometrage',
+                value: "$maxKilometrage Km",
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              BoxInfoWidget(
+                icon: Icons.bar_chart_sharp,
+                title: 'Consommation moyenne',
+                value: "$consoMoyenne L/100Km",
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

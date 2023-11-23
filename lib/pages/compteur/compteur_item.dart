@@ -1,6 +1,12 @@
 // ignore_for_file: file_names
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
+import 'package:furious_app/pages/compteur/alerts/delete_compteur_alertdialog.dart';
+import 'package:furious_app/pages/compteur/alerts/detail_compteur_alertdialog.dart';
+import 'package:furious_app/widget/custom_text/custom_list_item_text.dart';
+import 'package:intl/intl.dart';
 
 import '../../composant/Compteur.dart';
 
@@ -9,90 +15,103 @@ class CompteurItem extends StatefulWidget {
     Key? key,
     required this.compteur,
     required this.deleteCompteur,
-    required this.isDark,
+    required this.updateCompteur,
+    required this.colorMap,
   }) : super(key: key);
 
   final Function deleteCompteur;
+  final Function updateCompteur;
   final Compteur compteur;
-  final bool isDark;
+  final HashMap<String, Color> colorMap;
 
   @override
   State<CompteurItem> createState() => _CompteurItemState();
 }
 
 class _CompteurItemState extends State<CompteurItem> {
-  String get _formatedDate {
-    final dayLessThan10 = widget.compteur.date.day < 10 ? '0' : '';
-    final monthLessThan10 = widget.compteur.date.month < 10 ? '0' : '';
-    return '$dayLessThan10${widget.compteur.date.day}/$monthLessThan10${widget.compteur.date.month}/${widget.compteur.date.year}';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 10,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      margin: const EdgeInsets.all(10),
-      child: Container(
-        decoration: BoxDecoration(
+    int editKilometrage = widget.compteur.kilometrage;
+    double editMoyConsommation = widget.compteur.moyConsommation;
+    int editKilometrageParcouru = widget.compteur.kilometrageParcouru;
+    TextEditingController dateController = TextEditingController();
+    dateController.text = DateFormat('dd/MM/yyyy').format(widget.compteur.date);
+    DateTime selectedDate = widget.compteur.date;
+
+    return GestureDetector(
+      child: Card(
+        elevation: 10,
+        margin: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 5,
+        ),
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          color: widget.isDark ? Colors.grey[900] : Colors.white,
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Row(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: widget.colorMap['cardColor'],
+          ),
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      '${widget.compteur.kilometrage} Km',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  CustomListItemText(
+                    color: widget.colorMap['text']!,
+                    text: '${widget.compteur.kilometrage} Km',
+                    isBig: true,
+                    isBold: true,
                   ),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 20,
-                        ),
-                        Text(
-                          _formatedDate,
-                        ),
-                      ],
-                    ),
+                  CustomListItemText(
+                    color: widget.colorMap['text']!,
+                    text: '${widget.compteur.kilometrageParcouru} Km parcouru',
+                  ),
+                  CustomListItemText(
+                    color: widget.colorMap['text']!,
+                    text: '${widget.compteur.moyConsommation} L/100Km',
                   ),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      '${widget.compteur.kilometrageParcouru} Km parcouru',
-                    ),
+              IconButton(
+                onPressed: () => {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => DeleteCompteurAlertDialog(
+                      colorMap: widget.colorMap,
+                      compteur: widget.compteur,
+                      deleteCompteur: widget.deleteCompteur,
+                      ctx: ctx,
+                    )
                   ),
-                  Expanded(
-                    child: Text(
-                      '${widget.compteur.moyConsommation} L/100Km',
-                    ),
-                  ),
-                ],
+                },
+                icon: const Icon(Icons.delete),
+                color: Theme.of(context).colorScheme.error,
+                iconSize: MediaQuery.of(context).size.width * 0.08,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => DetailCompteurAlertDialog(
+            colorMap: widget.colorMap,
+            compteur: widget.compteur,
+            selectedDate: selectedDate,
+            context: ctx,
+            editKilometrage: editKilometrage,
+            editKilometrageParcouru: editKilometrageParcouru,
+            editMoyConsommation: editMoyConsommation,
+            updateCompteur: widget.updateCompteur,
+            dateController: dateController,
+          ),
+        );
+      },
     );
   }
 }

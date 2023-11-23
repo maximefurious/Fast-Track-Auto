@@ -6,8 +6,9 @@ import 'package:flutter/cupertino.dart';
 class AdaptiveFlatButton extends StatelessWidget {
   final String text;
   final Function handler;
+  final Map<String, Color> colorMap;
 
-  const AdaptiveFlatButton(this.text, this.handler, {Key? key})
+  const AdaptiveFlatButton(this.text, this.handler, this.colorMap, {Key? key})
       : super(key: key);
 
   @override
@@ -16,17 +17,22 @@ class AdaptiveFlatButton extends StatelessWidget {
         ? CupertinoButton(
             child: Text(
               text,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: colorMap['primaryColor']!,
+              ),
             ),
             onPressed: () => handler(),
           )
         : TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).primaryColor,
+              foregroundColor: colorMap['primaryColor']!,
             ),
             child: Text(
               text,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colorMap['primaryColor']!),
             ),
             onPressed: () => handler(),
           );

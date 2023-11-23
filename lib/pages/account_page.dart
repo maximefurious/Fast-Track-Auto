@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:furious_app/composant/Compteur.dart';
 import 'package:furious_app/composant/Entretien.dart';
@@ -9,29 +11,23 @@ class AccountPage extends StatefulWidget {
   final Function setIsDark;
   final Function setImmatriculation;
   final Function updateData;
-  final Color textcolor;
-  final Color backgroundcolor;
-  final String vehiculeTitle;
-  final String immatriculation;
-  final String vehiculeCylinder;
-  final String vehiculeDateMiseEnCirculation;
-  final String vehiculeCarburant;
+
   final bool isDark;
+
   final List<Entretien> _entretienList;
   final List<Compteur> _compteurList;
+  
+  final HashMap<String, Color> colorMap;
+  final Map<String, dynamic> vehiculeMap;
+
 
   const AccountPage(
       this.setIsDark,
       this.setImmatriculation,
       this.updateData,
       this.isDark,
-      this.immatriculation,
-      this.textcolor,
-      this.backgroundcolor,
-      this.vehiculeTitle,
-      this.vehiculeCylinder,
-      this.vehiculeDateMiseEnCirculation,
-      this.vehiculeCarburant,
+      this.colorMap,
+      this.vehiculeMap,
       this._entretienList,
       this._compteurList,
       {Key? key})
@@ -51,13 +47,13 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   TextStyle _buildTextStyle() {
-    return TextStyle(fontSize: 16, color: widget.textcolor);
+    return TextStyle(fontSize: 16, color: widget.colorMap['text']);
   }
 
   ListTile _buildDarkModeSwitch() {
     return ListTile(
       title: Text('Theme sombre', style: _buildTextStyle()),
-      tileColor: widget.backgroundcolor,
+      tileColor: widget.colorMap['cardColor'],
       trailing: Switch(
         value: widget.isDark,
         thumbIcon: MaterialStateProperty.all(
@@ -78,8 +74,8 @@ class _AccountPageState extends State<AccountPage> {
   ListTile _buildImmatriculationListTile() {
     return ListTile(
       title: Text('Immatriculation', style: _buildTextStyle()),
-      tileColor: widget.backgroundcolor,
-      trailing: Text(widget.immatriculation, style: _buildTextStyle()),
+      tileColor: widget.colorMap['cardColor'],
+      trailing: Text(widget.vehiculeMap['immatriculation']!, style: _buildTextStyle()),
       onTap: () => {
         showDialog(
           context: context,
@@ -88,12 +84,12 @@ class _AccountPageState extends State<AccountPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              backgroundColor: widget.backgroundcolor,
               title: Text('Immatriculation', style: _buildTextStyle()),
+              backgroundColor: widget.colorMap['cardColor'],
               content: Form(
                 key: _formKey,
                 child: TextFormField(
-                  initialValue: widget.immatriculation,
+                  initialValue: widget.vehiculeMap['immatriculation']!,
                   style: _buildTextStyle(),
                   decoration: InputDecoration(
                     hintText: 'Immatriculation',
@@ -105,13 +101,13 @@ class _AccountPageState extends State<AccountPage> {
               actions: <Widget>[
                 TextButton(
                   style:
-                      TextButton.styleFrom(foregroundColor: widget.textcolor),
+                      TextButton.styleFrom(foregroundColor: widget.colorMap['text']),
                   child: Text('Annuler', style: _buildTextStyle()),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 TextButton(
                   style:
-                      TextButton.styleFrom(foregroundColor: widget.textcolor),
+                      TextButton.styleFrom(foregroundColor: widget.colorMap['text']),
                   child: Text('Valider', style: _buildTextStyle()),
                   onPressed: () => _submitImmatriculation(newImmatriculation),
                 ),
@@ -126,12 +122,27 @@ class _AccountPageState extends State<AccountPage> {
   ListTile _buildGeneratePDFButton() {
     return ListTile(
       title: Text('Générer PDF', style: _buildTextStyle()),
-      tileColor: widget.backgroundcolor,
+      tileColor: widget.colorMap['cardColor'],
       onTap: () => {
         _generatePDF(),
       },
     );
   }
+
+  // ListTile _buildBluetoothConnexion() {
+  //   return ListTile(
+  //     title: Text('Connexion bluetooth', style: _buildTextStyle()),
+  //     tileColor: widget.colorMap['cardColor'],
+  //     onTap: () => {
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (context) => DiscoveryPage(),
+  //         ),
+  //       ),
+  //     },
+  //   );
+  // }
 
   Future<void> _generatePDF() async {
     PdfDocument document = PdfDocument();
@@ -145,35 +156,35 @@ class _AccountPageState extends State<AccountPage> {
     );
 
     page.graphics.drawString(
-      'Véhicule : ${widget.vehiculeTitle}',
+      'Véhicule : ${widget.vehiculeMap['title']}',
       PdfStandardFont(PdfFontFamily.helvetica, 20),
       bounds: Rect.fromLTWH(0, 50, page.getClientSize().width, 30),
       format: PdfStringFormat(alignment: PdfTextAlignment.left),
     );
 
     page.graphics.drawString(
-      'Immatriculation : ${widget.immatriculation}',
+      'Immatriculation : ${widget.vehiculeMap['immatriculation']}',
       PdfStandardFont(PdfFontFamily.helvetica, 20),
       bounds: Rect.fromLTWH(0, 80, page.getClientSize().width, 30),
       format: PdfStringFormat(alignment: PdfTextAlignment.left),
     );
 
     page.graphics.drawString(
-      'Cylindre : ${widget.vehiculeCylinder}',
+      'Cylindre : ${widget.vehiculeMap['cylindrer']}',
       PdfStandardFont(PdfFontFamily.helvetica, 20),
       bounds: Rect.fromLTWH(0, 110, page.getClientSize().width, 30),
       format: PdfStringFormat(alignment: PdfTextAlignment.left),
     );
 
     page.graphics.drawString(
-      'Date de mise en circulation : ${widget.vehiculeDateMiseEnCirculation}',
+      'Date de mise en circulation : ${widget.vehiculeMap['dateMiseEnCirculation']}',
       PdfStandardFont(PdfFontFamily.helvetica, 20),
       bounds: Rect.fromLTWH(0, 140, page.getClientSize().width, 30),
       format: PdfStringFormat(alignment: PdfTextAlignment.left),
     );
 
     page.graphics.drawString(
-      'Carburant : ${widget.vehiculeCarburant}',
+      'Carburant : ${widget.vehiculeMap['carburant']}',
       PdfStandardFont(PdfFontFamily.helvetica, 20),
       bounds: Rect.fromLTWH(0, 170, page.getClientSize().width, 30),
       format: PdfStringFormat(alignment: PdfTextAlignment.left),
@@ -276,16 +287,18 @@ class _AccountPageState extends State<AccountPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text('Paramètres',
-                style: TextStyle(fontSize: 20, color: widget.textcolor)),
+                style: TextStyle(fontSize: 20, color: widget.colorMap['text'])),
           ),
           Card(
             child: Column(
               children: <Widget>[
                 _buildDarkModeSwitch(),
-                Divider(height: 1, color: widget.textcolor),
+                Divider(height: 1, color: widget.colorMap['text']),
                 _buildImmatriculationListTile(),
-                Divider(height: 1, color: widget.textcolor),
+                Divider(height: 1, color: widget.colorMap['text']),
                 _buildGeneratePDFButton(),
+                // Divider(height: 1, color: widget.colorMap['text']),
+                // _buildBluetoothConnexion(),
               ],
             ),
           ),

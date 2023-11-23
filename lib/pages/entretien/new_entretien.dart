@@ -1,14 +1,17 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import '../../widget/adaptative_flat_button.dart';
 
 class NewEntretien extends StatefulWidget {
   final Function addEntretien;
-  final bool isDark;
+  final HashMap<String, Color> colorMap;
 
-  const NewEntretien(this.addEntretien, this.isDark, {Key? key}) : super(key: key);
+  const NewEntretien(this.addEntretien, this.colorMap, {Key? key})
+      : super(key: key);
 
   @override
   _NewEntretienState createState() => _NewEntretienState();
@@ -46,9 +49,7 @@ class _NewEntretienState extends State<NewEntretien> {
     final enteredPrix = double.parse(_prixController.text);
     final enteredKilometrage = int.parse(_kilometrageController.text);
 
-    if (enteredType.isEmpty ||
-        enteredPrix <= 0 ||
-        enteredKilometrage <= 0) {
+    if (enteredType.isEmpty || enteredPrix <= 0 || enteredKilometrage <= 0) {
       return;
     }
 
@@ -68,6 +69,24 @@ class _NewEntretienState extends State<NewEntretien> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2019),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            primaryColor: widget.colorMap['primaryColor']!,
+            dialogBackgroundColor: widget.colorMap['cardColor']!,
+            textSelectionTheme: TextSelectionThemeData(
+              selectionColor: widget.colorMap['primaryColor']!,
+            ),
+            colorScheme: ColorScheme.dark(
+              primary: widget.colorMap['primaryColor']!,
+              onPrimary: widget.colorMap['textFieldColor']!,
+              surface: widget.colorMap['background']!,
+              onSurface: widget.colorMap['text']!,
+            ),
+          ),
+          child: child!,
+        );
+      },
     ).then((pickedDate) {
       if (pickedDate == null) {
         return;
@@ -85,7 +104,7 @@ class _NewEntretienState extends State<NewEntretien> {
         key: globalCtrl,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.isDark ? Colors.grey[800] : Colors.white,
+            color: widget.colorMap['cardColor'],
           ),
           padding: EdgeInsets.only(
             top: 10,
@@ -100,21 +119,21 @@ class _NewEntretienState extends State<NewEntretien> {
                 decoration: InputDecoration(
                   labelText: 'Type',
                   labelStyle: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                   ),
                 ),
                 controller: _typeController,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Prix',
                   labelStyle: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                   ),
                 ),
                 controller: _prixController,
@@ -122,21 +141,22 @@ class _NewEntretienState extends State<NewEntretien> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Kilometrage',
                   labelStyle: TextStyle(
-                      color: widget.isDark ? Colors.white : Colors.black),
+                    color: widget.colorMap['text'],
+                  ),
                 ),
                 controller: _kilometrageController,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
               ),
               SizedBox(
@@ -147,21 +167,20 @@ class _NewEntretienState extends State<NewEntretien> {
                       child: Text(
                         'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                         style: TextStyle(
-                          color:
-                              widget.isDark ? Colors.white : Colors.black,
+                          color: widget.colorMap['text'],
                         ),
                       ),
                     ),
-                    AdaptiveFlatButton('Choisir Date', _presentDatePicker),
+                    AdaptiveFlatButton(
+                        'Choisir Date', _presentDatePicker, widget.colorMap),
                   ],
                 ),
               ),
               ElevatedButton(
                 onPressed: _submitData,
                 style: ElevatedButton.styleFrom(
-                  foregroundColor:
-                      Theme.of(context).textTheme.labelLarge!.color,
-                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: widget.colorMap['textFieldColor'],
+                  backgroundColor: widget.colorMap['primaryColor'],
                 ),
                 child: const Text('Ajouter Entretien'),
               ),

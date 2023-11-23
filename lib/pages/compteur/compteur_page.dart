@@ -1,13 +1,15 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 class CompteurPage extends StatefulWidget {
   final Widget compteurListWidget;
   final Function startAddNewCompteur;
-  final bool isDark;
-  final Color backgroundColor;
 
-  const CompteurPage(this.compteurListWidget, this.startAddNewCompteur,
-      this.isDark, this.backgroundColor,
+  final HashMap<String, Color> colorMap;
+
+  const CompteurPage(
+      this.compteurListWidget, this.startAddNewCompteur, this.colorMap,
       {Key? key})
       : super(key: key);
 
@@ -18,23 +20,25 @@ class CompteurPage extends StatefulWidget {
 class _CompteurPageState extends State<CompteurPage> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        color: widget.isDark ? Colors.grey[800] : Colors.white,
-        child: Column(children: [
+    return Container(
+      color: widget.colorMap['backgroundCard'],
+      child: Column(
+        children: [
           Expanded(
             child: widget.compteurListWidget,
           ),
           ButtonBar(
-            alignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
+              FloatingActionButton(
                 onPressed: () => widget.startAddNewCompteur(context),
-                child: const Text('Ajouter Kilomètrage'),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
-        ]),
+        ],
       ),
     );
   }

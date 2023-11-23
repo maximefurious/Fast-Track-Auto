@@ -2,10 +2,10 @@
 
 class Compteur {
   final String id;
-  final int kilometrage;
-  final DateTime date;
-  final int kilometrageParcouru;
-  final double moyConsommation;
+  int kilometrage;
+  DateTime date;
+  int kilometrageParcouru;
+  double moyConsommation;
 
   Compteur({
     required this.id,
@@ -21,5 +21,13 @@ class Compteur {
 
   double get getMoyConsommation {
     return moyConsommation;
+  }
+
+  int get getKilometrageParcouru {
+    return kilometrageParcouru;
+  }
+
+  DateTime get getDate {
+    return date;
   }
 }

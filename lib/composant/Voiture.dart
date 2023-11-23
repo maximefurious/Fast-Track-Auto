@@ -1,9 +1,6 @@
 // ignore_for_file: file_names
-
-import 'dart:ffi';
-
 class Voiture {
-  final int id;
+  final String id;
   final String title;
   final String immatriculation;
   final String cylindrer;
@@ -20,13 +17,21 @@ class Voiture {
   });
 
   factory Voiture.fromJson2(Map<String, dynamic> json) {
+    String id = json['vehicule'][0]['id'].toString();
+    String libelle = json['vehicule'][0]['libelle'];
+    String immatriculation = json['numberPlate'].toString().toUpperCase();
+    List<String> libelleSplit = json['vehicule'][0]['libelle'].split(' ');
+    String cylindrer = "${libelleSplit[libelleSplit.length - 3]} ${libelleSplit[libelleSplit.length - 2]} ${libelleSplit[libelleSplit.length - 1]}";
+    String dateMiseEnCirculation = json['firstRegistrationDate'];
+    String carburant = json['vehicule'][0]['carburant'];
+
     return Voiture(
-      id: int.parse(json['all'][0]['idVehicule']),
-      title: json['all'][0]['brand']['label'] + ' ' + json['all'][0]['model']['label'],
-      immatriculation: json['all'][0]['immatAttributes'][6]['value'],
-      cylindrer: json['all'][0]['cyl']['label'],
-      dateMiseEnCirculation: json['all'][0]['immatAttributes'][1]['value'],
-      carburant: json['all'][0]['immatAttributes'][10]['value'],
+      id: id,
+      title: libelle,
+      immatriculation: immatriculation,
+      cylindrer: cylindrer,
+      dateMiseEnCirculation: dateMiseEnCirculation,
+      carburant: carburant,
     );
   }
 }

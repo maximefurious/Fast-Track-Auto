@@ -1,13 +1,19 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:furious_app/composant/Compteur.dart';
 import 'package:furious_app/pages/compteur/compteur_item.dart';
 
 class CompteurList extends StatelessWidget {
-  final List<Compteur> compteurList;
   final Function deleteCompteur;
-  final bool isDark;
+  final Function _updateCompteur;
 
-  const CompteurList(this.compteurList, this.deleteCompteur, this.isDark,
+  final List<Compteur> compteurList;
+
+  final HashMap<String, Color> colorMap;
+
+  const CompteurList(this.compteurList, this.deleteCompteur,
+      this._updateCompteur, this.colorMap,
       {Key? key})
       : super(key: key);
 
@@ -22,7 +28,17 @@ class CompteurList extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
+                  color: colorMap['text'],
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              SizedBox(
+                height: 100,
+                child: Image.asset(
+                  'assets/images/waiting.png',
+                  fit: BoxFit.cover,
                 ),
               ),
             ],
@@ -33,7 +49,8 @@ class CompteurList extends StatelessWidget {
                       key: ValueKey(compteur.id),
                       compteur: compteur,
                       deleteCompteur: deleteCompteur,
-                      isDark: isDark,
+                      updateCompteur: _updateCompteur,
+                      colorMap: colorMap,
                     ))
                 .toList(),
           );

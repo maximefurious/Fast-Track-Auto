@@ -1,14 +1,17 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import '../../widget/adaptative_flat_button.dart';
 
 class NewCompteur extends StatefulWidget {
   final Function addCompteur;
-  final bool isDark;
+  final HashMap<String, Color> colorMap;
 
-  const NewCompteur(this.addCompteur, this.isDark, {Key? key}) : super(key: key);
+  const NewCompteur(this.addCompteur, this.colorMap, {Key? key})
+      : super(key: key);
 
   @override
   _NewCompteurState createState() => _NewCompteurState();
@@ -70,6 +73,24 @@ class _NewCompteurState extends State<NewCompteur> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2019),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            primaryColor: widget.colorMap['primaryColor']!,
+            dialogBackgroundColor: widget.colorMap['cardColor']!,
+            textSelectionTheme: TextSelectionThemeData(
+              selectionColor: widget.colorMap['primaryColor']!,
+            ),
+            colorScheme: ColorScheme.dark(
+              primary: widget.colorMap['primaryColor']!,
+              onPrimary: widget.colorMap['textFieldColor']!,
+              surface: widget.colorMap['background']!,
+              onSurface: widget.colorMap['text']!,
+            ),
+          ),
+          child: child!,
+        );
+      },
     ).then((pickedDate) {
       if (pickedDate == null) {
         return;
@@ -87,7 +108,7 @@ class _NewCompteurState extends State<NewCompteur> {
         key: globalCtrl,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.isDark ? Colors.grey[800] : Colors.white,
+            color: widget.colorMap['cardColor'],
           ),
           padding: EdgeInsets.only(
             top: 10,
@@ -102,38 +123,42 @@ class _NewCompteurState extends State<NewCompteur> {
                 decoration: InputDecoration(
                   labelText: 'Kilometrage',
                   labelStyle: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                   ),
+                  fillColor: widget.colorMap['primaryColor']!,
                 ),
                 controller: _kilometrageController,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
+                cursorColor: widget.colorMap['primaryColor']!,
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Kilometrage Parcouru',
                   labelStyle: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                   ),
+                  focusColor: widget.colorMap['primaryColor']!,
                 ),
                 controller: _kilometrageParcouruController,
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
               ),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Moyenne Consommation',
                   labelStyle: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                   ),
+                  focusColor: widget.colorMap['primaryColor']!,
                 ),
                 controller: _moyConsommationController,
                 keyboardType:
@@ -141,7 +166,7 @@ class _NewCompteurState extends State<NewCompteur> {
                 onSubmitted: (_) => _submitData(),
                 autofocus: true,
                 style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black,
+                  color: widget.colorMap['text'],
                 ),
               ),
               SizedBox(
@@ -152,27 +177,22 @@ class _NewCompteurState extends State<NewCompteur> {
                       child: Text(
                         'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                         style: TextStyle(
-                          color:
-                              widget.isDark ? Colors.white : Colors.black,
+                          color: widget.colorMap['text']!.withOpacity(0.8),
                         ),
                       ),
                     ),
-                    AdaptiveFlatButton('Choisir Date', _presentDatePicker),
+                    AdaptiveFlatButton(
+                        'Choisir Date', _presentDatePicker, widget.colorMap),
                   ],
                 ),
               ),
               ElevatedButton(
                 onPressed: _submitData,
                 style: ElevatedButton.styleFrom(
-                  foregroundColor:
-                      Theme.of(context).textTheme.labelLarge!.color,
-                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: widget.colorMap['textFieldColor'],
+                  backgroundColor: widget.colorMap['primaryColor'],
                 ),
-                child: Text(
-                  'Ajouter Kilomètrage',
-                  style: TextStyle(
-                      color: widget.isDark ? Colors.black : Colors.white),
-                ),
+                child: const Text('Ajouter Kilomètrage'),
               ),
             ],
           ),

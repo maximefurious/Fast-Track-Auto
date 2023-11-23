@@ -1,25 +1,30 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:furious_app/composant/Compteur.dart';
 
 class LineChartWidget extends StatefulWidget {
-  final bool isDark;
-  final List<FlSpot> spots = [
-    FlSpot(0, 3),
-    FlSpot(2.6, 2),
-    FlSpot(4.9, 5),
-    FlSpot(6.8, 3.1),
-    FlSpot(8, 4),
-    FlSpot(9.5, 3),
-    FlSpot(11, 4),
-  ];
+  final List<Compteur> compteurList;
+  final HashMap<String, Color> colorMap;
 
-  LineChartWidget(this.isDark, {Key? key}) : super(key: key);
+  const LineChartWidget(this.colorMap, this.compteurList,  {Key? key}) : super(key: key);
 
   @override
   State<LineChartWidget> createState() => _LineChartWidgetState();
 }
 
 class _LineChartWidgetState extends State<LineChartWidget> {
+  List<FlSpot> _getSpots() {
+    widget.compteurList.sort((a, b) => a.kilometrage.compareTo(b.kilometrage));
+    List<FlSpot> spots = [];
+    for (int i = 0; i < widget.compteurList.length; i++) {
+      Compteur compteur = widget.compteurList[i];
+      spots.add(FlSpot(compteur.kilometrage.toDouble(), compteur.moyConsommation));
+    }
+    return spots;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -31,29 +36,25 @@ class _LineChartWidgetState extends State<LineChartWidget> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: widget.isDark ? Colors.grey[900] : Colors.white,
+          color: widget.colorMap['cardColor'],
         ),
         padding: const EdgeInsets.all(10),
         height: MediaQuery.of(context).size.height * 0.3,
         width: MediaQuery.of(context).size.width,
         child: LineChart(
           LineChartData(
-            minX: 0,
-            maxX: 11,
-            minY: 0,
-            maxY: 6,
-            gridData: FlGridData(
+            gridData: const FlGridData(
               show: true,
               drawVerticalLine: true,
             ),
             titlesData: FlTitlesData(
               show: true,
               bottomTitles: AxisTitles(
-                axisNameSize: 15,
+                axisNameSize: 20,
                 axisNameWidget: Text(
                   'Kilométrage',
                   style: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -63,20 +64,18 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                   getTitlesWidget: (value, meta) => Text(
                     '${value.toInt()}',
                     style: TextStyle(
-                      color: widget.isDark ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.bold,
+                      color: widget.colorMap['text'],
                       fontSize: 10,
                     ),
                   )
                 ),
-                drawBehindEverything: true,
               ),
               leftTitles: AxisTitles(
-                axisNameSize: 15,
+                axisNameSize: 20,
                 axisNameWidget: Text(
                   'Consommation',
                   style: TextStyle(
-                    color: widget.isDark ? Colors.white : Colors.black,
+                    color: widget.colorMap['text'],
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -84,23 +83,21 @@ class _LineChartWidgetState extends State<LineChartWidget> {
                 sideTitles: SideTitles(
                   showTitles: true,
                   getTitlesWidget: (value, meta) => Text(
-                    '${value.toInt()}',
+                    '${double.parse(value.toStringAsFixed(2))}',
                     style: TextStyle(
-                      color: widget.isDark ? Colors.white : Colors.black,
+                      color: widget.colorMap['text'],
                       fontWeight: FontWeight.bold,
                       fontSize: 10,
-
                     ),
                   )
                 ),
-                drawBehindEverything: true,
               ),
-              rightTitles: AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: false,
                 ),
               ),
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: false,
                 ),
@@ -108,7 +105,7 @@ class _LineChartWidgetState extends State<LineChartWidget> {
             ),
             lineBarsData: [
               LineChartBarData(
-                spots: widget.spots,
+                spots: _getSpots(),
                 isCurved: true,
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,

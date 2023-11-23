@@ -1,13 +1,14 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 class EntretienPage extends StatefulWidget {
   final Widget entListWidget;
   final Function startAddNewEntretien;
-  final bool isDark;
-  final Color backgroundColor;
+  final HashMap<String, Color> colorMap;
 
-  const EntretienPage(this.entListWidget, this.startAddNewEntretien,
-      this.isDark, this.backgroundColor,
+  const EntretienPage(
+      this.entListWidget, this.startAddNewEntretien, this.colorMap,
       {Key? key})
       : super(key: key);
 
@@ -16,23 +17,23 @@ class EntretienPage extends StatefulWidget {
 }
 
 class _EntretienPageState extends State<EntretienPage> {
-  final globalCtrl = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: widget.isDark ? Colors.grey[800] : Colors.white,
+      color: widget.colorMap['backgroundCard'],
       child: Column(
         children: [
           Expanded(
             child: widget.entListWidget,
           ),
           ButtonBar(
-            alignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
+              FloatingActionButton(
                 onPressed: () => widget.startAddNewEntretien(context),
-                child: const Text('Ajouter un entretien'),
+                child: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
