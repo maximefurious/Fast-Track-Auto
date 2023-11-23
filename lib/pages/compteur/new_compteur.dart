@@ -3,6 +3,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 
 import '../../widget/adaptative_flat_button.dart';
 
@@ -174,15 +175,16 @@ class _NewCompteurState extends State<NewCompteur> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                        style: TextStyle(
-                          color: widget.colorMap['text']!.withOpacity(0.8),
-                        ),
+                      child: CustomCarnetText(
+                        color: widget.colorMap['text']!.withOpacity(0.8),
+                        text: 'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
                       ),
                     ),
                     AdaptiveFlatButton(
-                        'Choisir Date', _presentDatePicker, widget.colorMap),
+                      'Choisir Date',
+                      _presentDatePicker,
+                      widget.colorMap,
+                    ),
                   ],
                 ),
               ),

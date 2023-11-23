@@ -40,9 +40,9 @@ class DetailCompteurAlertDialog extends StatelessWidget {
 
     return AlertDialog(
       backgroundColor: colorMap['cardColor'],
-      title: CustomCarnetText(
-        color: colorMap['text']!,
-        text: 'Détails',
+      title: const CustomCarnetText(
+        color: Colors.green,
+        text: 'Détails du relever',
         isBold: true,
       ),
       content: Column(
@@ -106,9 +106,10 @@ class DetailCompteurAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text(
-            'Fermer',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Fermer',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -129,9 +130,10 @@ class DetailCompteurAlertDialog extends StatelessWidget {
               ),
             );
           },
-          child: const Text(
-            'Modifier',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Modifier',
+            isBold: true,
           ),
         ),
       ],

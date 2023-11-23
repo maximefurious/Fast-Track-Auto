@@ -20,11 +20,10 @@ class DeleteEntretienAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: colorMap['cardColor'],
-      title: const Text(
-        'Supprimer un Entretien',
-        style: TextStyle(
-          color: Colors.red,
-        ),
+      title: const CustomCarnetText(
+        color: Colors.red,
+        text: 'Supprimer un Entretien',
+        isBold: true,
       ),
       content: CustomCarnetText(
         color: colorMap['text']!,
@@ -35,9 +34,10 @@ class DeleteEntretienAlertDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(ctx).pop(false);
           },
-          child: const Text(
-            'Non',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Non',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -45,9 +45,10 @@ class DeleteEntretienAlertDialog extends StatelessWidget {
             Navigator.of(ctx).pop();
             deleteEntretien(entretien.id);
           },
-          child: const Text(
-            'Oui',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Oui',
+            isBold: true,
           ),
         ),
       ],

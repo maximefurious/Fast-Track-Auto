@@ -40,11 +40,10 @@ class DetailEntretienAlertDialog extends StatelessWidget {
 
     return AlertDialog(
       backgroundColor: colorMap['cardColor'],
-      title: const Text(
-        'Détails de l\'entretien',
-        style: TextStyle(
-          color: Colors.green,
-        ),
+      title: const CustomCarnetText(
+        color: Colors.green,
+        text: 'Détails de l\'entretien',
+        isBold: true,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -109,9 +108,10 @@ class DetailEntretienAlertDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text(
-            'Fermer',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Fermer',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -132,9 +132,10 @@ class DetailEntretienAlertDialog extends StatelessWidget {
               ),
             );
           },
-          child: const Text(
-            'Modifier',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Modifier',
+            isBold: true,
           ),
         ),
       ],

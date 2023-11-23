@@ -20,21 +20,23 @@ class DeleteCompteurAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: colorMap['cardColor'],
-      title: const Text(
-        'Supprimer',
-        style: TextStyle(color: Colors.red),
+      title: const CustomCarnetText(
+        color: Colors.red,
+        text: 'Supprimer un relever',
+        isBold: true,
       ),
       content: CustomCarnetText(
         color: colorMap['text']!,
         text:
-            'Voulez-vous vraiment supprimer cette enregistrement kilométrique ?',
+            'Voulez-vous vraiment supprimer cette relever kilométrique de la liste ?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text(
-            'Non',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Non',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -42,9 +44,10 @@ class DeleteCompteurAlertDialog extends StatelessWidget {
             deleteCompteur(compteur.id);
             Navigator.of(ctx).pop();
           },
-          child: const Text(
-            'Oui',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Oui',
+            isBold: true,
           ),
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:furious_app/composant/Entretien.dart';
+import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 import 'package:furious_app/widget/formfield/custom_edit_date_form_field.dart';
 import 'package:furious_app/widget/formfield/custom_edit_text_form_field.dart';
 import 'package:intl/intl.dart';
@@ -117,9 +118,10 @@ class UpdateEntretienAlertDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text(
-            'Annuler',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Annuler',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -133,9 +135,10 @@ class UpdateEntretienAlertDialog extends StatelessWidget {
             );
             Navigator.of(context).pop();
           },
-          child: const Text(
-            'Modifier',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Modifier',
+            isBold: true,
           ),
         ),
       ],

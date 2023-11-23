@@ -117,9 +117,10 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text(
-            'Annuler',
-            style: TextStyle(color: Colors.red),
+          child: const CustomCarnetText(
+            color: Colors.red,
+            text: 'Annuler',
+            isBold: true,
           ),
         ),
         TextButton(
@@ -133,9 +134,10 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
             );
             Navigator.of(context).pop();
           },
-          child: const Text(
-            'Modifier',
-            style: TextStyle(color: Colors.green),
+          child: const CustomCarnetText(
+            color: Colors.green,
+            text: 'Modifier',
+            isBold: true,
           ),
         ),
       ],

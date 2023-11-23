@@ -41,7 +41,7 @@ class _CarnetPageState extends State<CarnetPage>
               FloatingActionButton(
                 onPressed: () => startAddNewItem(context),
                 backgroundColor: widget.colorMap['primaryColor'],
-                child: const Icon(Icons.add),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ],
           ),
