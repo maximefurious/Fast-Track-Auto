@@ -8,8 +8,7 @@ class AdaptiveFlatButton extends StatelessWidget {
   final Function handler;
   final Map<String, Color> colorMap;
 
-  const AdaptiveFlatButton(this.text, this.handler, this.colorMap, {Key? key})
-      : super(key: key);
+  const AdaptiveFlatButton(this.text, this.handler, this.colorMap, {super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,24 +1,20 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 
 class CarnetPage extends StatefulWidget {
   final Widget entListWidget;
   final Widget compteurListWidget;
-  final Function startAddNewEntretien;
+  final Function startAddNewEntretien; // garde la même signature (avec BuildContext)
   final Function startAddNewCompteur;
-  final HashMap<String, Color> colorMap;
   final Map<String, dynamic> vehiculeMap;
 
   const CarnetPage(
-    this.entListWidget,
-    this.compteurListWidget,
-    this.startAddNewEntretien,
-    this.startAddNewCompteur,
-    this.colorMap,
-    this.vehiculeMap, {
-    Key? key,
-  }) : super(key: key);
+      this.entListWidget,
+      this.compteurListWidget,
+      this.startAddNewEntretien,
+      this.startAddNewCompteur,
+      this.vehiculeMap, {
+        super.key,
+      });
 
   @override
   State<CarnetPage> createState() => _CarnetPageState();
@@ -28,20 +24,21 @@ class _CarnetPageState extends State<CarnetPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  Widget listItemWitdget(listWidget, startAddNewItem) {
+  Widget listItemWidget(BuildContext context, Widget listWidget, Function startAddNewItem) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: widget.colorMap['backgroundCard'],
+      color: cs.surface, // ou cs.surfaceVariant si tu veux plus de contraste
       child: Column(
         children: [
-          Expanded(
-            child: listWidget,
-          ),
-          ButtonBar(
+          Expanded(child: listWidget),
+          OverflowBar(
+            alignment: MainAxisAlignment.end,
             children: [
               FloatingActionButton(
                 onPressed: () => startAddNewItem(context),
-                backgroundColor: widget.colorMap['primaryColor'],
-                child: const Icon(Icons.add, color: Colors.white),
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
+                child: const Icon(Icons.add),
               ),
             ],
           ),
@@ -62,34 +59,39 @@ class _CarnetPageState extends State<CarnetPage>
     super.dispose();
   }
 
+  String _titleFromVehiculeMap(Map<String, dynamic> vehiculeMap) {
+    final raw = (vehiculeMap['title'] ?? 'Ma voiture').toString().trim();
+    final parts = raw.split(RegExp(r'\s+'));
+    return parts.length >= 2 ? '${parts[0]} - ${parts[1]}' : raw;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: widget.colorMap['secondaryColor'],
-          // for the title icon + text
+          backgroundColor: cs.surface, // laisse null si tu veux le comportement par défaut Material 3
+          elevation: 5,
           title: Row(
             children: [
-              const Icon(Icons.car_crash, color: Colors.black),
+              Icon(Icons.car_crash, color: cs.onSurface),
               const SizedBox(width: 10),
               Text(
-                '${widget.vehiculeMap['title'].toString().split(' ')[0]} - ${widget.vehiculeMap['title'].toString().split(' ')[1]}',
-                style: TextStyle(
-                  color: widget.colorMap['text'],
-                ),
+                _titleFromVehiculeMap(widget.vehiculeMap),
+                style: theme.textTheme.titleMedium?.copyWith(color: cs.onSurface),
               ),
             ],
           ),
           centerTitle: true,
-          elevation: 5,
           bottom: TabBar(
             controller: _tabController,
-            labelColor: widget.colorMap['primaryColor']!,
-            unselectedLabelColor:
-                widget.colorMap['primaryColor']!.withOpacity(0.5),
-            indicatorColor: widget.colorMap['primaryColor']!,
+            labelColor: cs.primary,
+            unselectedLabelColor: cs.onSurfaceVariant,
+            indicatorColor: cs.primary,
             tabs: const [
               Tab(text: 'Entretien/Frais'),
               Tab(text: 'Compteur/Kilométrage'),
@@ -99,9 +101,8 @@ class _CarnetPageState extends State<CarnetPage>
         body: TabBarView(
           controller: _tabController,
           children: <Widget>[
-            listItemWitdget(widget.entListWidget, widget.startAddNewEntretien),
-            listItemWitdget(
-                widget.compteurListWidget, widget.startAddNewCompteur),
+            listItemWidget(context, widget.entListWidget, widget.startAddNewEntretien),
+            listItemWidget(context, widget.compteurListWidget, widget.startAddNewCompteur),
           ],
         ),
       ),

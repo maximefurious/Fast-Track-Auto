@@ -5,9 +5,12 @@ class BoxInfoWidget extends StatelessWidget {
   final String title;
   final String value;
 
-  const BoxInfoWidget(
-      {Key? key, required this.icon, required this.title, required this.value})
-      : super(key: key);
+  const BoxInfoWidget({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.value
+  });
 
   @override
   Widget build(BuildContext context) {

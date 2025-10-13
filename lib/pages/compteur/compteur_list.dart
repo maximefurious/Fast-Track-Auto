@@ -1,7 +1,5 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Compteur.dart';
+import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/pages/compteur/compteur_item.dart';
 
 class CompteurList extends StatelessWidget {
@@ -10,12 +8,9 @@ class CompteurList extends StatelessWidget {
 
   final List<Compteur> compteurList;
 
-  final HashMap<String, Color> colorMap;
+  final Map<String, Color> colorMap;
 
-  const CompteurList(this.compteurList, this.deleteCompteur,
-      this._updateCompteur, this.colorMap,
-      {Key? key})
-      : super(key: key);
+  const CompteurList(this.compteurList, this.deleteCompteur, this._updateCompteur, this.colorMap, {super.key});
 
   @override
   Widget build(BuildContext context) {

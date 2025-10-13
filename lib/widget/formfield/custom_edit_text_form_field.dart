@@ -7,14 +7,14 @@ class CustomEditTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final Function onChangedCallback;
 
-  const CustomEditTextFormField(
-      {Key? key,
+  const CustomEditTextFormField({
+    super.key,
       required this.initialValue,
       required this.labelText,
       required this.color,
       this.keyboardType,
-      required this.onChangedCallback})
-      : super(key: key);
+      required this.onChangedCallback
+  });
 
   @override
   Widget build(BuildContext context) {

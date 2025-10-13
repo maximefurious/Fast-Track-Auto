@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Compteur.dart';
+import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 import 'package:furious_app/widget/formfield/custom_edit_date_form_field.dart';
 import 'package:furious_app/widget/formfield/custom_edit_text_form_field.dart';
@@ -20,8 +20,8 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
 
   final Function updateCompteur;
 
-  const UpdateCompteurAlertDialog(
-      {Key? key,
+  const UpdateCompteurAlertDialog({
+    super.key,
       required this.colorMap,
       required this.updateCompteur,
       required this.editKilometrage,
@@ -30,8 +30,8 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
       required this.selectedDate,
       required this.compteur,
       required this.dateController,
-      required this.context})
-      : super(key: key);
+      required this.context
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,6 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
           return Theme(
             data: ThemeData.dark().copyWith(
               primaryColor: colorMap['primaryColor'],
-              dialogBackgroundColor: colorMap['cardColor'],
               textSelectionTheme: TextSelectionThemeData(
                 selectionColor: colorMap['primaryColor'],
               ),
@@ -59,7 +58,7 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
                 onPrimary: colorMap['textFieldColor']!,
                 surface: colorMap['background']!,
                 onSurface: colorMap['text']!,
-              ),
+              ), dialogTheme: DialogThemeData(backgroundColor: colorMap['cardColor']),
             ),
             child: child!,
           );

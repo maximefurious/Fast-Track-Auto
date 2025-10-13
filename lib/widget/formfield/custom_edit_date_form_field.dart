@@ -6,13 +6,13 @@ class CustomEditDateFormField extends StatelessWidget {
   final Color color;
   final Function onTapCallback;
 
-  const CustomEditDateFormField(
-      {Key? key,
+  const CustomEditDateFormField({
+    super.key,
       required this.controller,
       required this.labelText,
       required this.color,
-      required this.onTapCallback})
-      : super(key: key);
+      required this.onTapCallback
+  });
 
   @override
   Widget build(BuildContext context) {

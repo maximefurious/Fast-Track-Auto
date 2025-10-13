@@ -1,52 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Entretien.dart';
+import 'package:furious_app/models/entretien.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 
 class DeleteEntretienAlertDialog extends StatelessWidget {
-  final BuildContext ctx;
-  final Map<String, Color> colorMap;
-  final Entretien entretien;
-  final Function deleteEntretien;
+  const DeleteEntretienAlertDialog({
+    super.key,
+    required this.entretien,
+    required this.deleteEntretien,
+    required BuildContext ctx,
+  });
 
-  const DeleteEntretienAlertDialog(
-      {Key? key,
-      required this.ctx,
-      required this.colorMap,
-      required this.entretien,
-      required this.deleteEntretien})
-      : super(key: key);
+  final Entretien entretien;
+  final void Function(String id) deleteEntretien;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return AlertDialog(
-      backgroundColor: colorMap['cardColor'],
-      title: const CustomCarnetText(
-        color: Colors.red,
+      backgroundColor: cs.surface,
+      title: CustomCarnetText(
+        color: cs.error,
         text: 'Supprimer un Entretien',
         isBold: true,
       ),
       content: CustomCarnetText(
-        color: colorMap['text']!,
-        text: 'Voulez-vous vraiment supprimer cette entretien de la liste ?',
+        color: cs.onSurface,
+        text: 'Voulez-vous vraiment supprimer cet entretien de la liste ?',
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(ctx).pop(false);
-          },
-          child: const CustomCarnetText(
-            color: Colors.red,
+          onPressed: () => Navigator.of(context).pop(false),
+          style: TextButton.styleFrom(
+            foregroundColor: cs.error,
+          ),
+          child: CustomCarnetText(
+            color: cs.error,
             text: 'Non',
             isBold: true,
           ),
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(ctx).pop();
+            Navigator.of(context).pop(true);
             deleteEntretien(entretien.id);
           },
-          child: const CustomCarnetText(
-            color: Colors.green,
+          style: TextButton.styleFrom(
+            foregroundColor: cs.primary,
+          ),
+          child: CustomCarnetText(
+            color: Colors.green, // ou cs.primary si tu veux tout thématiser
             text: 'Oui',
             isBold: true,
           ),

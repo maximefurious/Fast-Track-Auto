@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Compteur.dart';
+import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/pages/compteur/alerts/update_compteur_alertdialog.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 
@@ -18,8 +18,8 @@ class DetailCompteurAlertDialog extends StatelessWidget {
 
   final Function updateCompteur;
 
-  const DetailCompteurAlertDialog(
-      {Key? key,
+  const DetailCompteurAlertDialog({
+    super.key,
       required this.colorMap,
       required this.compteur,
       required this.selectedDate,
@@ -28,8 +28,8 @@ class DetailCompteurAlertDialog extends StatelessWidget {
       required this.editKilometrageParcouru,
       required this.editMoyConsommation,
       required this.updateCompteur,
-      required this.dateController})
-      : super(key: key);
+      required this.dateController
+  });
 
   @override
   Widget build(BuildContext context) {

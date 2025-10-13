@@ -1,129 +1,129 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Compteur.dart';
-import 'package:furious_app/composant/Entretien.dart';
+import 'package:furious_app/models/compteur.dart';
+import 'package:furious_app/models/entretien.dart';
 import 'package:furious_app/widget/box_info_widget.dart';
 
 class CarInfo extends StatelessWidget {
   final List<Compteur> compteurList;
-  final List<Entretien> entList;
-
-  final HashMap<String, Color> colorMap;
+  final List<Entretien> entList; // gardé si tu l’utilises ailleurs
   final Map<String, dynamic> vehiculeMap;
 
   const CarInfo(
-      this.vehiculeMap, this.entList, this.compteurList, this.colorMap,
-      {Key? key})
-      : super(key: key);
+      this.vehiculeMap,
+      this.entList,
+      this.compteurList, {
+        super.key,
+      });
 
   int get maxKilometrage {
+    if (compteurList.isEmpty) return 0;
     int max = 0;
-    for (var i = 0; i < compteurList.length; i++) {
-      if (compteurList[i].kilometrage > max) {
-        max = compteurList[i].kilometrage;
-      }
+    for (final c in compteurList) {
+      if (c.kilometrage > max) max = c.kilometrage;
     }
-
     return max;
   }
 
-  double get consoMoyenne {
-    double moyenne = 0;
-    if (compteurList.isNotEmpty) {
-      for (var i = 0; i < compteurList.length; i++) {
-        moyenne += compteurList[i].moyConsommation;
-      }
-      moyenne = moyenne / (compteurList.length);
+  String get consoMoyenneStr {
+    if (compteurList.isEmpty) return '0.00';
+    double sum = 0;
+    for (final c in compteurList) {
+      sum += c.moyConsommation;
     }
-    String moy = moyenne.toStringAsExponential(2);
-    moyenne = double.parse(moy);
-    return moyenne;
+    final moy = sum / compteurList.length;
+    return moy.toStringAsFixed(2);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+      color: cs.onSurface,
+    );
+
+    final titre = (vehiculeMap['title'] ?? 'Ma voiture').toString();
+    final immat = (vehiculeMap['immatriculation'] ?? 'Inconnue').toString();
+    final carburant = (vehiculeMap['carburant'] ?? 'Inconnue').toString();
+    // La clé d’origine est "cylindrer" dans ton modèle — on la conserve
+    final cylindrer = (vehiculeMap['cylindrer'] ?? 'Inconnue').toString();
+    final dateMC = (vehiculeMap['dateMiseEnCirculation'] ?? 'Inconnue').toString();
+
     return Container(
       margin: const EdgeInsets.all(10),
       child: Column(
         children: <Widget>[
-          Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: colorMap['cardColor'],
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 5,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                vehiculeMap['title']!,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          // En-tête
+          Card(
+            color: cs.surface,
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Container(
+              height: 50,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(titre, style: titleStyle),
             ),
           ),
           const SizedBox(height: 10),
+
+          // Ligne 1
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               BoxInfoWidget(
                 icon: Icons.directions_car,
                 title: 'Immatriculation',
-                value: vehiculeMap['immatriculation']!,
+                value: immat,
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               BoxInfoWidget(
                 icon: Icons.local_gas_station,
                 title: 'Carburant',
-                value: vehiculeMap['carburant']!,
+                value: carburant,
               ),
             ],
           ),
           const SizedBox(height: 10),
+
+          // Ligne 2
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               BoxInfoWidget(
                 icon: Icons.speed,
-                title: 'Cylindrer',
-                value: vehiculeMap['cylindrer']!,
+                title: 'Cylindrer', // conserve l’intitulé d’origine
+                value: cylindrer,
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               BoxInfoWidget(
                 icon: Icons.shopping_cart,
                 title: 'Date de mise en circulation',
-                value: vehiculeMap['dateMiseEnCirculation']!,
+                value: dateMC,
               ),
             ],
           ),
           const SizedBox(height: 10),
+
+          // Ligne 3
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              BoxInfoWidget(
-                icon: Icons.text_snippet,
-                title: 'Kilometrage',
-                value: "$maxKilometrage Km",
+              Expanded(
+                child: BoxInfoWidget(
+                  icon: Icons.text_snippet,
+                  title: 'Kilométrage',
+                  value: '$maxKilometrage Km',
+                ),
               ),
-              const SizedBox(
-                width: 10,
-              ),
-              BoxInfoWidget(
-                icon: Icons.bar_chart_sharp,
-                title: 'Consommation moyenne',
-                value: "$consoMoyenne L/100Km",
+              const SizedBox(width: 10),
+              Expanded(
+                child: BoxInfoWidget(
+                  icon: Icons.bar_chart_sharp,
+                  title: 'Consommation moyenne',
+                  value: '$consoMoyenneStr L/100Km',
+                ),
               ),
             ],
           ),

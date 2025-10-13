@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Entretien.dart';
+import 'package:furious_app/models/entretien.dart';
 import 'package:furious_app/pages/entretien/alerts/update_entretien_alertdialog.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
+import 'package:intl/intl.dart';
 
 class DetailEntretienAlertDialog extends StatelessWidget {
-  final BuildContext context;
-  final Map<String, Color> colorMap;
+  const DetailEntretienAlertDialog({
+    super.key,
+    required this.entretien,
+    required this.selectedDate,
+    required this.editKilometrage,
+    required this.editPrix,
+    required this.editType,
+    required this.updateEntretien,
+    required this.dateController,
+  });
+
+  final Entretien entretien;
 
   final int editKilometrage;
   final double editPrix;
@@ -14,34 +25,18 @@ class DetailEntretienAlertDialog extends StatelessWidget {
 
   final TextEditingController dateController;
 
-  final Entretien entretien;
+  final void Function(Entretien e) updateEntretien;
 
-  final Function updateEntretien;
-
-  const DetailEntretienAlertDialog(
-      {Key? key,
-      required this.colorMap,
-      required this.entretien,
-      required this.selectedDate,
-      required this.context,
-      required this.editKilometrage,
-      required this.editPrix,
-      required this.editType,
-      required this.updateEntretien,
-      required this.dateController})
-      : super(key: key);
+  String _formatDate(DateTime d) => DateFormat('dd/MM/yyyy').format(d);
 
   @override
   Widget build(BuildContext context) {
-    int editKilometrage = this.editKilometrage;
-    double editPrix = this.editPrix;
-    String editType = this.editType;
-    DateTime selectedDate = this.selectedDate;
+    final cs = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      backgroundColor: colorMap['cardColor'],
-      title: const CustomCarnetText(
-        color: Colors.green,
+      backgroundColor: cs.surface,
+      title: CustomCarnetText(
+        color: cs.primary,
         text: 'Détails de l\'entretien',
         isBold: true,
       ),
@@ -50,66 +45,35 @@ class DetailEntretienAlertDialog extends StatelessWidget {
         children: [
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Type : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: entretien.type,
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Type : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: entretien.type),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Prix : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: '${entretien.prix}€',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Prix : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: '${entretien.prix}€'),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Kilométrage : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: '${entretien.kilometrage} km',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Kilométrage : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: '${entretien.kilometrage} km'),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Date : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text:
-                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Date : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: _formatDate(selectedDate)),
             ],
           ),
         ],
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const CustomCarnetText(
-            color: Colors.red,
+          onPressed: () => Navigator.of(context).pop(),
+          child: CustomCarnetText(
+            color: cs.error,
             text: 'Fermer',
             isBold: true,
           ),
@@ -120,20 +84,19 @@ class DetailEntretienAlertDialog extends StatelessWidget {
             showDialog(
               context: context,
               builder: (ctx) => UpdateEntretienAlertDialog(
-                colorMap: colorMap,
-                updateEntretien: updateEntretien,
+                // version sans colorMap/ctx (à patcher aussi)
+                entretien: entretien,
                 editKilometrage: editKilometrage,
                 editPrix: editPrix,
                 editType: editType,
                 selectedDate: selectedDate,
-                entretien: entretien,
                 dateController: dateController,
-                context: ctx,
+                updateEntretien: updateEntretien,
               ),
             );
           },
-          child: const CustomCarnetText(
-            color: Colors.green,
+          child: CustomCarnetText(
+            color: cs.primary,
             text: 'Modifier',
             isBold: true,
           ),

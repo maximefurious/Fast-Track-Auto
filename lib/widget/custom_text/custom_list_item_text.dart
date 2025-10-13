@@ -6,8 +6,13 @@ class CustomListItemText extends StatelessWidget {
   final bool isBig;
   final bool isBold;
 
-  const CustomListItemText({Key? key, required this.color, required this.text, this.isBig = false, this.isBold = false})
-      : super(key: key);
+  const CustomListItemText({
+    super.key,
+    required this.color,
+    required this.text,
+    this.isBig = false,
+    this.isBold = false
+  });
 
   @override
   Widget build(BuildContext context) {

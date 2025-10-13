@@ -1,59 +1,58 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:furious_app/pages/entretien/entretien_item.dart';
-
-import '../../composant/Entretien.dart';
+import '../../models/entretien.dart';
 
 class EntretienList extends StatelessWidget {
-  final Function deleteEnt;
-  final Function _updateEntretien;
-
   final List<Entretien> entretienList;
+  final void Function(String id) onDelete;
+  final void Function(Entretien e) onUpdate;
 
-  final HashMap<String, Color> colorMap;
-
-  const EntretienList(
-      this.entretienList, this.deleteEnt, this._updateEntretien, this.colorMap,
-      {Key? key})
-      : super(key: key);
+  const EntretienList(this.entretienList, this.onDelete, this.onUpdate, {super.key,});
 
   @override
   Widget build(BuildContext context) {
-    return entretienList.isEmpty
-        ? Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Aucun entretien',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: colorMap['text'],
-                ),
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    if (entretienList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Aucun entretien',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                // onSurface = couleur de texte par défaut pour un fond surface
+                color: theme.textTheme.titleMedium?.color ?? cs.onSurface,
               ),
-              const SizedBox(
-                height: 20,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 100,
+              child: Image.asset(
+                'assets/images/waiting.png',
+                fit: BoxFit.fitWidth,
               ),
-              SizedBox(
-                height: 100,
-                child: Image.asset(
-                  'assets/images/waiting.png',
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
-            ],
-          )
-        : ListView(
-            children: entretienList
-                .map((ent) => EntretienItem(
-                      key: ValueKey(ent.id),
-                      entretien: ent,
-                      deleteEnt: deleteEnt,
-                      updateEntretien: _updateEntretien,
-                      colorMap: colorMap,
-                    ))
-                .toList(),
-          );
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: entretienList.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final ent = entretienList[index];
+        return EntretienItem(
+          key: ValueKey(ent.id),
+          entretien: ent,
+          deleteEnt: onDelete,
+          updateEntretien: onUpdate,
+          // plus de colorMap ici
+        );
+      },
+    );
   }
 }

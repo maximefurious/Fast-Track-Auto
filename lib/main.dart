@@ -1,399 +1,223 @@
-import 'dart:collection';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-// import 'package:furious_app/bluetooth/BluetoothScanPage.dart';
-// import 'package:furious_app/bluetooth/DiscoveryPage.dart';
-import 'package:furious_app/composant/Compteur.dart';
-import 'package:furious_app/composant/Entretien.dart';
-import 'package:furious_app/composant/Voiture.dart';
+
 import 'package:furious_app/pages/account_page.dart';
 import 'package:furious_app/pages/carnet_page.dart';
-import 'package:furious_app/pages/entretien/entretien_list.dart';
-import 'package:furious_app/pages/my_home_page.dart';
 import 'package:furious_app/pages/compteur/compteur_list.dart';
-import 'package:furious_app/pages/compteur/new_compteur.dart';
-import 'package:furious_app/pages/entretien/new_entretien.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:furious_app/pages/entretien/entretien_list.dart';
+import 'package:furious_app/pages/my_home_page.dart' as my_home; // si ton fichier s'appelle MyHomePage.dart, ajuste ce chemin
 
-void main() {
-  // locked the app in portrait mode
+import 'package:furious_app/models/entretien.dart';
+import 'package:furious_app/models/compteur.dart';
+import 'package:furious_app/pages/new_compteur.dart';
+import 'package:furious_app/pages/new_entretien.dart';
+import 'package:furious_app/services/impl/compteur_service.dart';
+import 'package:furious_app/services/impl/entretien_service.dart';
+import 'package:furious_app/services/impl/pdf_report_service.dart';
+
+// Services/Theme
+import 'package:furious_app/services/service_manager.dart';
+import 'package:furious_app/services/impl/theme_service.dart';
+import 'package:furious_app/services/impl/vehicle_service.dart';
+import 'package:furious_app/services/impl/bluetooth_service.dart';
+import 'package:furious_app/theme/app_theme.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-      .then((_) {
-    runApp(const MyApp());
-  });
-}
 
-Future<Voiture> fetchCarData(immatriculation) async {
-  // https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/FW696-BY?shop=9902&reg-country=FR
-  // String url = 'https://www.norauto.fr/next-e-shop/car-selector/identification/reg-vin/external/FW696BY?shop=9902&reg-country=FR';
-  String url = 'https://www.mister-auto.com/nwsAjax/Plate?captcha_token=&family_id=0&generic_id=0&category_id=0&locale=fr_FR&device=desktop&pageType=homepage&country=FR&lang=fr&captchaVersion=v3&plate_selector_vof=&immatriculation=fw-696-BY';
-  Map<String, String> headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Access-Control-Allow-Origin': '*'
-  };
-  final response = await http.get(
-    Uri.parse(url),
-    headers: headers,
-  );
-  if (response.statusCode == 200) {
-    return Voiture.fromJson2(jsonDecode(response.body));
-  }
-  return Voiture(
-      id: "0",
-      title: 'Aucune voiture trouvée',
-      immatriculation: immatriculation,
-      cylindrer: 'Inconnue',
-      dateMiseEnCirculation: 'Inconnue',
-      carburant: 'Inconnue');
+  // Enregistre les services
+  final sm = ServiceManager.instance;
+  sm
+    ..register<ThemeService>(ThemeService())
+    ..register<VehicleService>(VehicleService())
+    ..register<BluetoothService>(BluetoothService())
+    ..register<PdfReportService>(PdfReportService())
+    ..register<EntretienService>(EntretienService()) // NEW
+    ..register<CompteurService>(CompteurService());   // NEW
+
+  await sm.initAll();
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
-
+  const MyApp({super.key});
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  final List<Entretien> _entretienList = [];
-  final List<Compteur> _compteurList = [];
-  late Future<Voiture> futureVoiture;
-  int _index = 0;
-
-  bool _isDark = false;
-
-  HashMap<String, Color> colorMap = HashMap();
-  Map<String, dynamic> vehiculeMap = {
-    'title': 'Aucune voiture trouvée',
-    'immatriculation': 'Inconnue',
-    'cylindrer': 'Inconnue',
-    'dateMiseEnCirculation': 'Inconnue',
-    'carburant': 'Inconnue'
-  };
-
-  // BluetoothConnection? connection;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // TODO Faire une page de configuration pour choisir la voiture
-    futureVoiture = fetchCarData('FW-696-BY');
-    futureVoiture.then((value) {
-      setState(() {
-        vehiculeMap['title'] = value.title.toString();
-        vehiculeMap['immatriculation'] = value.immatriculation.toString();
-        vehiculeMap['cylindrer'] = value.cylindrer.toString();
-        vehiculeMap['dateMiseEnCirculation'] =
-            value.dateMiseEnCirculation.toString();
-        vehiculeMap['carburant'] = value.carburant.toString();
-      });
-    });
-    initSharedPrefs();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    // connection?.dispose();
-  }
-
-  void _updateData() {
-    futureVoiture =
-        fetchCarData(vehiculeMap['immatriculation'].toString().toUpperCase());
-    futureVoiture.then((value) {
-      setState(() {
-        vehiculeMap['title'] = value.title;
-        vehiculeMap['immatriculation'] = value.immatriculation;
-        vehiculeMap['cylindrer'] = value.cylindrer;
-        vehiculeMap['dateMiseEnCirculation'] = value.dateMiseEnCirculation;
-        vehiculeMap['carburant'] = value.carburant;
-      });
-    });
-  }
-
-  void initSharedPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _setIsDark(prefs.getBool('isDark') ?? false);
-    _setEntretien(prefs.getString('entretienList') ?? "");
-    _setCompteur(prefs.getString('compteurList') ?? "");
-  }
-
-  void _setCurrentIndex(int index) {
-    setState(() {
-      _index = index;
-    });
-  }
-
-  void _setIsDark(bool isDark) {
-    setState(() {
-      _isDark = isDark;
-      colorMap['text'] = isDark ? Colors.white : Colors.black;
-      colorMap['background'] =
-          isDark ? Colors.grey[800]! : const Color(0xFFE5E5E5);
-      colorMap['cardColor'] = isDark ? Colors.grey[900]! : Colors.white;
-      colorMap['textFieldColor'] = isDark ? Colors.black : Colors.white;
-      colorMap['primaryColor'] =
-          isDark ? Colors.grey[800]! : const Color.fromARGB(255, 154, 0, 149);
-      colorMap['secondaryColor'] = isDark ? Colors.grey[900]! : Colors.white;
-    });
-  }
-
-  void _setEntretien(String entretienList) {
-    if (entretienList == "") return;
-    Map<String, dynamic> data = jsonDecode(entretienList);
-
-    data.forEach((key, value) {
-      value = jsonDecode(value);
-      final newEntretien = Entretien(
-        id: value['id'],
-        kilometrage: value['kilometrage'],
-        type: value['type'],
-        prix: value['prix'],
-        date: DateTime.parse(value['date']),
-      );
-
-      setState(() {
-        _entretienList.add(newEntretien);
-        saveEntretien();
-      });
-    });
-  }
-
-  void _setCompteur(String compteurList) {
-    if (compteurList == "") return;
-    Map<String, dynamic> data = jsonDecode(compteurList);
-
-    data.forEach((key, value) {
-      value = jsonDecode(value);
-      final newCompteur = Compteur(
-        id: value['id'],
-        kilometrage: value['kilometrage'],
-        date: DateTime.parse(value['date']),
-        kilometrageParcouru: value['kilometrageParcouru'],
-        moyConsommation: value['moyConsommation'],
-      );
-
-      setState(() {
-        _compteurList.add(newCompteur);
-        saveCompteur();
-      });
-    });
-  }
-
-  void _setVehiculeImmatriculation(String immatriculation) {
-    setState(() {
-      vehiculeMap['immatriculation'] = immatriculation.toUpperCase();
-    });
-  }
-
-  void _addNewEntretien(int newKilometrage, String newType, double newPrix, DateTime newDate) {
-    final newEntretien = Entretien(
-      id: DateTime.now().toString(),
-      kilometrage: newKilometrage,
-      type: newType,
-      prix: newPrix,
-      date: DateTime.now(),
-    );
-
-    setState(() {
-      _entretienList.add(newEntretien);
-      saveEntretien();
-    });
-  }
-
-  void _addNewCompteur(int newKilometrage, DateTime newDate,
-      int newKilometrageParcouru, double newMoyConsommation) {
-    final newCompteur = Compteur(
-      id: DateTime.now().toString(),
-      kilometrage: newKilometrage,
-      date: DateTime.now(),
-      kilometrageParcouru: newKilometrageParcouru,
-      moyConsommation: newMoyConsommation,
-    );
-
-    setState(() {
-      _compteurList.add(newCompteur);
-      saveCompteur();
-    });
-  }
-
-  void _deleteEntretien(String id) {
-    setState(() {
-      _entretienList.removeWhere((entretien) => entretien.id == id);
-      saveEntretien();
-    });
-  }
-
-  void _deleteCompteur(String id) {
-    setState(() {
-      _compteurList.removeWhere((compteur) => compteur.id == id);
-      saveCompteur();
-    });
-  }
-
-  void _updateEntretien(
-      String id, int kilometrage, String type, double prix, DateTime date) {
-    setState(() {
-      _entretienList.removeWhere((entretien) => entretien.id == id);
-      _entretienList.add(Entretien(
-        id: id,
-        kilometrage: kilometrage,
-        type: type,
-        prix: prix,
-        date: date,
-      ));
-      saveEntretien();
-    });
-  }
-
-  /// Save entretien list to shared preferences
-  void saveEntretien() {
-    Map<String, dynamic> data = {};
-
-    for (var entretien in _entretienList) {
-      data[entretien.id] = "{\"id\": \"${entretien.id}\", \"kilometrage\": ${entretien.kilometrage}, \"type\": \"${entretien.type}\", \"prix\": ${entretien.prix}, \"date\": \"${entretien.date}\"}";
-    }
-
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString('entretienList', jsonEncode(data));
-    });
-  }
-
-  /// Save compteur list to shared preferences
-  void saveCompteur() {
-    Map<String, dynamic> data = {};
-
-    for (var compteur in _compteurList) {
-      data[compteur.id] = "{\"id\": \"${compteur.id}\", \"kilometrage\": ${compteur.kilometrage}, \"date\": \"${compteur.date}\", \"kilometrageParcouru\": ${compteur.kilometrageParcouru}, \"moyConsommation\": ${compteur.moyConsommation}}";
-    }
-
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString('compteurList', jsonEncode(data));
-    });
-  }
-
-  void _updateCompteur(String id, int kilometrage, DateTime date,
-      int kilometrageParcouru, double moyConsommation) {
-    setState(() {
-      _compteurList.removeWhere((compteur) => compteur.id == id);
-      _compteurList.add(Compteur(
-        id: id,
-        kilometrage: kilometrage,
-        date: date,
-        kilometrageParcouru: kilometrageParcouru,
-        moyConsommation: moyConsommation,
-      ));
-      saveCompteur();
-    });
-  }
-
-  void _startAddNewEntretien(BuildContext ctx) {
-    showModalBottomSheet(
-      context: ctx,
-      builder: (_) {
-        return GestureDetector(
-          onTap: () {},
-          behavior: HitTestBehavior.opaque,
-          child: NewEntretien(_addNewEntretien, colorMap),
-        );
-      },
-    );
-  }
-
-  void _startAddNewCompteur(BuildContext ctx) {
-    showModalBottomSheet(
-      context: ctx,
-      builder: (_) {
-        return GestureDetector(
-          onTap: () {},
-          behavior: HitTestBehavior.opaque,
-          child: NewCompteur(_addNewCompteur, colorMap),
-        );
-      },
-    );
-  }
+  final sm = ServiceManager.instance;
 
   @override
   Widget build(BuildContext context) {
-    Widget entListWidget = EntretienList(
-        _entretienList, _deleteEntretien, _updateEntretien, colorMap);
-    Widget compteurListWidget =
-        CompteurList(_compteurList, _deleteCompteur, _updateCompteur, colorMap);
+    final themeService = sm.get<ThemeService>();
 
-    return MaterialApp(
-      home: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-          height: double.infinity,
-          color: colorMap['background'],
-          child: [
-            MyHomePage(
-              vehiculeMap,
-              _entretienList,
-              _compteurList,
-              colorMap,
-              // connection,
-            ),
-            CarnetPage(
-              entListWidget,
-              compteurListWidget,
-              _startAddNewEntretien,
-              _startAddNewCompteur,
-              colorMap,
-              vehiculeMap,
-            ),
-            AccountPage(
-              _setIsDark,
-              _setVehiculeImmatriculation,
-              _updateData,
-              _isDark,
-              colorMap,
-              vehiculeMap,
-              _entretienList,
-              _compteurList,
-            ),
-            // DiscoveryPage()
-            // BluetoothScanPage(_addNewCompteur, _addBluetoothConnection),
-          ][_index],
-        ),
-        bottomNavigationBar: Theme(
-          data: Theme.of(context).copyWith(
-            canvasColor: colorMap['secondaryColor'],
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _index,
-            onTap: (index) => _setCurrentIndex(index),
-            selectedItemColor: colorMap['primaryColor'],
-            unselectedItemColor: Colors.grey,
-            elevation: 5,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.menu_book),
-                label: 'Carnet',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.account_circle),
-                label: 'Account',
-              ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(Icons.settings),
-              //   label: 'Settings',
-              // )
-            ],
-          ),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: themeService.mode,
+      builder: (_, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: themeService.mode.value,
+          home: const _RootTabs(),
+        );
+      },
     );
   }
 }
+
+/// Pont temporaire pour générer ton colorMap depuis ThemeData
+Map<String, Color> colorMapFromTheme(BuildContext context) {
+  final theme = Theme.of(context);
+  final cs = theme.colorScheme;
+  return {
+    'primaryColor': cs.primary,
+    'onPrimary': cs.onPrimary,
+    'secondaryColor': cs.surface,
+    'onSecondary': cs.onSurface,
+    'background': theme.scaffoldBackgroundColor,
+    'surface': cs.surface,
+    'onSurface': cs.onSurface,
+    'surfaceVariant': cs.surfaceContainerHighest,
+    'onSurfaceVariant': cs.onSurfaceVariant,
+    'error': cs.error,
+    'onError': cs.onError,
+  };
+}
+
+/// Widget racine avec la BottomNav et l’état partagé
+class _RootTabs extends StatefulWidget {
+  const _RootTabs();
+  @override
+  State<_RootTabs> createState() => _RootTabsState();
+}
+
+class _RootTabsState extends State<_RootTabs> {
+  final sm = ServiceManager.instance;
+  int _index = 0;
+
+  bool get _isDark => sm.get<ThemeService>().mode.value == ThemeMode.dark;
+
+  Map<String, dynamic> vehiculeMap = {
+    'title': 'Ma voiture',
+    'immatriculation': 'AA-123-AA',
+    'cylindrer': '1.2L',
+    'dateMiseEnCirculation': '2020-01-01',
+    'carburant': 'Essence',
+  };
+
+  // ==== Callbacks pages, maintenant via services ====
+
+  void _setCurrentIndex(int i) => setState(() => _index = i);
+
+  Future<void> _setIsDark(bool v) async {
+    final themeService = sm.get<ThemeService>();
+    await themeService.setMode(v ? ThemeMode.dark : ThemeMode.light);
+    setState(() {});
+  }
+
+  void _setVehiculeImmatriculation(String plate) {
+    setState(() => vehiculeMap['immatriculation'] = plate);
+  }
+
+  Future<void> _updateData() async {
+    final vehicleService = sm.get<VehicleService>();
+    final plate = vehiculeMap['immatriculation']?.toString() ?? '';
+    final v = await vehicleService.fetchByPlate(plate);
+    setState(() {
+      vehiculeMap['title'] = v.title;
+      vehiculeMap['immatriculation'] = v.immatriculation;
+      vehiculeMap['cylindrer'] = v.cylindrer;
+      vehiculeMap['dateMiseEnCirculation'] = v.dateMiseEnCirculation;
+      vehiculeMap['carburant'] = v.carburant;
+    });
+  }
+
+  Future<void> _startAddNewEntretien(BuildContext ctx) async {
+    final Entretien? created = await Navigator.of(ctx).push<Entretien>(
+      MaterialPageRoute(builder: (_) => const NewEntretienPage()),
+    );
+    if (created != null) {
+      sm.get<EntretienService>().add(created);
+      setState(() => _index = 1);
+    }
+  }
+
+  Future<void> _startAddNewCompteur(BuildContext ctx) async {
+    final Compteur? created = await Navigator.of(ctx).push<Compteur>(
+      MaterialPageRoute(builder: (_) => const NewCompteurPage()),
+    );
+    if (created != null) {
+      sm.get<CompteurService>().add(created);
+      setState(() => _index = 1);
+    }
+  }
+
+  void _deleteEntretien(String id) => sm.get<EntretienService>().delete(id);
+  void _updateEntretien(Entretien e) => sm.get<EntretienService>().update(e);
+
+  void _deleteCompteur(String id) => sm.get<CompteurService>().delete(id);
+  void _updateCompteur(Compteur c) => sm.get<CompteurService>().update(c);
+
+  @override
+  Widget build(BuildContext context) {
+    final colorMap = colorMapFromTheme(context);
+    final entretienSvc = sm.get<EntretienService>();
+    final compteurSvc = sm.get<CompteurService>();
+
+    // On écoute les 2 services pour reconstruire UI quand leurs listes changent
+    return AnimatedBuilder(
+      animation: Listenable.merge([entretienSvc, compteurSvc]),
+      builder: (_, __) {
+        final entListWidget =
+        EntretienList(entretienSvc.items, _deleteEntretien, _updateEntretien);
+        final compteurListWidget =
+        CompteurList(compteurSvc.items, _deleteCompteur, _updateCompteur, colorMap);
+
+        final pages = <Widget>[
+          my_home.MyHomePage(
+            vehiculeMap,
+            entretienSvc.items,
+            compteurSvc.items,
+          ),
+          CarnetPage(
+            entListWidget,
+            compteurListWidget,
+            _startAddNewEntretien,
+            _startAddNewCompteur,
+            vehiculeMap,
+          ),
+          AccountPage(
+            _setIsDark,
+            _setVehiculeImmatriculation,
+            _updateData,
+            _isDark,
+            vehiculeMap,
+            entretienSvc.items,
+            compteurSvc.items,
+          ),
+        ];
+
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: SizedBox.expand(child: pages[_index]),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: _setCurrentIndex,
+            selectedItemColor: Theme.of(context).colorScheme.primary,
+            unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            elevation: 3,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Carnet'),
+              BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+

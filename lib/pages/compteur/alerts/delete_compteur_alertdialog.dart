@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:furious_app/composant/Compteur.dart';
+import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 
 class DeleteCompteurAlertDialog extends StatelessWidget {
@@ -8,13 +8,13 @@ class DeleteCompteurAlertDialog extends StatelessWidget {
   final Compteur compteur;
   final Function deleteCompteur;
 
-  const DeleteCompteurAlertDialog(
-      {Key? key,
+  const DeleteCompteurAlertDialog({
+    super.key,
       required this.ctx,
       required this.colorMap,
       required this.compteur,
-      required this.deleteCompteur})
-      : super(key: key);
+      required this.deleteCompteur
+  });
 
   @override
   Widget build(BuildContext context) {

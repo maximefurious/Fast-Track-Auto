@@ -5,8 +5,12 @@ class CustomCarnetText extends StatelessWidget {
   final String text;
   final bool isBold;
 
-  const CustomCarnetText({Key? key, required this.color, required this.text, this.isBold = false})
-      : super(key: key);
+  const CustomCarnetText({
+    super.key,
+    required this.color,
+    required this.text,
+    this.isBold = false
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,156 +1,171 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:furious_app/pages/entretien/alerts/delete_entretien_alertdialog.dart';
 import 'package:furious_app/pages/entretien/alerts/detail_entretien_alertdialog.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
 import 'package:intl/intl.dart';
 
-import '../../composant/Entretien.dart';
+import '../../models/entretien.dart';
 
 class EntretienItem extends StatefulWidget {
   const EntretienItem({
-    Key? key,
+    super.key,
     required this.entretien,
     required this.deleteEnt,
     required this.updateEntretien,
-    required this.colorMap,
-  }) : super(key: key);
+  });
 
-  final Function deleteEnt;
-  final Function updateEntretien;
   final Entretien entretien;
-  final HashMap<String, Color> colorMap;
+  final void Function(String id) deleteEnt;
+  final void Function(Entretien e) updateEntretien;
 
   @override
   State<EntretienItem> createState() => _EntretienItemState();
 }
 
 class _EntretienItemState extends State<EntretienItem> {
+  // Optionnel: garder ces valeurs en local pour l'édition
+  late int editKilometrage;
+  late double editPrix;
+  late String editType;
+  late DateTime selectedDate;
+  late final TextEditingController dateController;
+
+  @override
+  void initState() {
+    super.initState();
+    editKilometrage = widget.entretien.kilometrage;
+    editPrix = widget.entretien.prix;
+    editType = widget.entretien.type;
+    selectedDate = widget.entretien.date;
+    dateController = TextEditingController(text: _formatDate(widget.entretien.date));
+  }
+
+  @override
+  void didUpdateWidget(covariant EntretienItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entretien != widget.entretien) {
+      editKilometrage = widget.entretien.kilometrage;
+      editPrix = widget.entretien.prix;
+      editType = widget.entretien.type;
+      selectedDate = widget.entretien.date;
+      dateController.text = _formatDate(widget.entretien.date);
+    }
+  }
+
+  @override
+  void dispose() {
+    dateController.dispose();
+    super.dispose();
+  }
+
+  String _formatDate(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
+
   @override
   Widget build(BuildContext context) {
-    String formatedDate(DateTime date) {
-      return DateFormat('dd/MM/yyyy').format(date);
-    }
-
-    int editKilometrage = widget.entretien.kilometrage;
-    double editPrix = widget.entretien.prix;
-    String editType = widget.entretien.type;
-    TextEditingController dateController = TextEditingController();
-    dateController.text = formatedDate(widget.entretien.date);
-    DateTime selectedDate = widget.entretien.date;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final text = theme.textTheme;
 
     return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (ctx) => DetailEntretienAlertDialog(
+            // colorMap supprimé: le dialog doit aussi lire Theme.of(context)
+            entretien: widget.entretien,
+            selectedDate: selectedDate,
+            editKilometrage: editKilometrage,
+            editPrix: editPrix,
+            editType: editType,
+            updateEntretien: widget.updateEntretien,
+            dateController: dateController,
+          ),
+        );
+      },
       child: Card(
         elevation: 10,
-        margin: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 5,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: cs.surface,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: widget.colorMap['cardColor'],
+            color: cs.surface, // ex- cardColor
           ),
           padding: const EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Infos
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Titre + prix
                   Row(
                     children: [
                       CustomCarnetText(
-                        color: widget.colorMap['text']!,
+                        color: text.titleMedium?.color ?? cs.onSurface,
                         text:
-                            '${widget.entretien.type[0].toUpperCase()}${widget.entretien.type.substring(1).trim()} : ',
+                        '${widget.entretien.type[0].toUpperCase()}${widget.entretien.type.substring(1).trim()} : ',
                         isBold: true,
                       ),
                       Container(
                         width: 50,
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(7.0),
-                            topRight: Radius.circular(7.0),
-                            bottomLeft: Radius.circular(7.0),
-                            bottomRight: Radius.circular(7.0),
-                          ),
+                        decoration: BoxDecoration(
+                          color: cs.primary, // ex- Colors.green
+                          borderRadius: BorderRadius.circular(7),
                         ),
-                        child: Center(
-                          child: Text(
-                            '${widget.entretien.prix}€',
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${widget.entretien.prix}€',
+                          style: text.labelLarge?.copyWith(color: cs.onPrimary) ??
+                              const TextStyle(color: Colors.white),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
-                        formatedDate(selectedDate),
-                        style: TextStyle(
-                          color: widget.colorMap['text'],
-                        ),
+                        _formatDate(selectedDate),
+                        style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       Text(
                         '${widget.entretien.kilometrage} km',
-                        style: TextStyle(
-                          color: widget.colorMap['text'],
-                        ),
+                        style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                       ),
                     ],
                   ),
                 ],
               ),
+              // Delete
               IconButton(
                 onPressed: () {
-                  // display a dialog to confirm deletion
                   showDialog(
                     context: context,
                     builder: (ctx) => DeleteEntretienAlertDialog(
+                      // colorMap supprimé: le dialog doit aussi lire Theme.of(context)
                       ctx: ctx,
-                      colorMap: widget.colorMap,
                       entretien: widget.entretien,
                       deleteEntretien: widget.deleteEnt,
                     ),
                   );
                 },
                 icon: const Icon(Icons.delete),
-                color: Theme.of(context).colorScheme.error,
+                color: cs.error,
                 iconSize: MediaQuery.of(context).size.width * 0.08,
+                tooltip: 'Supprimer',
               ),
             ],
           ),
         ),
       ),
-      onTap: () {
-        // dialog that display the details of the entretien with 2 buttons 1 that close the dialog and the other that close the current dialog and reopen and other for editing every field
-        showDialog(
-          context: context,
-          builder: (ctx) => DetailEntretienAlertDialog(
-              colorMap: widget.colorMap,
-              entretien: widget.entretien,
-              selectedDate: selectedDate,
-              context: context,
-              editKilometrage: editKilometrage,
-              editPrix: editPrix,
-              editType: editType,
-              updateEntretien: widget.updateEntretien,
-              dateController: dateController),
-        );
-      },
     );
   }
 }
