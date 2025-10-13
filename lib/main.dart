@@ -97,8 +97,6 @@ class _RootTabsState extends State<_RootTabs> {
   final sm = ServiceManager.instance;
   int _index = 0;
 
-  bool get _isDark => sm.get<ThemeService>().mode.value == ThemeMode.dark;
-
   Map<String, dynamic> vehiculeMap = {
     'title': 'Ma voiture',
     'immatriculation': 'AA-123-AA',
@@ -110,16 +108,7 @@ class _RootTabsState extends State<_RootTabs> {
   // ==== Callbacks pages, maintenant via services ====
 
   void _setCurrentIndex(int i) => setState(() => _index = i);
-
-  Future<void> _setIsDark(bool v) async {
-    final themeService = sm.get<ThemeService>();
-    await themeService.setMode(v ? ThemeMode.dark : ThemeMode.light);
-    setState(() {});
-  }
-
-  void _setVehiculeImmatriculation(String plate) {
-    setState(() => vehiculeMap['immatriculation'] = plate);
-  }
+  void _setVehiculeImmatriculation(String plate) => setState(() => vehiculeMap['immatriculation'] = plate);
 
   Future<void> _updateData() async {
     final vehicleService = sm.get<VehicleService>();
@@ -189,10 +178,8 @@ class _RootTabsState extends State<_RootTabs> {
             vehiculeMap,
           ),
           AccountPage(
-            _setIsDark,
             _setVehiculeImmatriculation,
             _updateData,
-            _isDark,
             vehiculeMap,
             entretienSvc.items,
             compteurSvc.items,

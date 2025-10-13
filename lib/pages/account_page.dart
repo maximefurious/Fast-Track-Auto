@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/models/entretien.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:furious_app/methods/mobile.dart';
 
 import '../services/impl/pdf_report_service.dart';
 import '../services/service_manager.dart';
 
 class AccountPage extends StatefulWidget {
-  final Function setIsDark;
   final Function setImmatriculation; // attend (String)
   final Function updateData;
-  final bool isDark;
 
   final List<Entretien> _entretienList;
   final List<Compteur> _compteurList;
@@ -19,10 +16,8 @@ class AccountPage extends StatefulWidget {
   final Map<String, dynamic> vehiculeMap;
 
   const AccountPage(
-      this.setIsDark,
       this.setImmatriculation,
       this.updateData,
-      this.isDark,
       this.vehiculeMap,
       this._entretienList,
       this._compteurList, {
@@ -48,28 +43,6 @@ class _AccountPageState extends State<AccountPage> {
     return theme.textTheme.bodyLarge!.copyWith(
       color: theme.colorScheme.onSurface,
       fontSize: 16,
-    );
-  }
-
-  ListTile _buildDarkModeSwitch(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return ListTile(
-      title: Text('Thème sombre', style: _tileTextStyle(context)),
-      tileColor: cs.surface,
-      trailing: Switch(
-        value: widget.isDark,
-        thumbIcon: WidgetStateProperty.all(
-          widget.isDark
-              ? const Icon(Icons.brightness_2, color: Colors.yellow)
-              : const Icon(Icons.sunny, color: Colors.black),
-        ),
-        activeTrackColor: cs.primary.withOpacity(0.25),
-        onChanged: (value) async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('isDark', value);
-          widget.setIsDark(value);
-        },
-      ),
     );
   }
 
@@ -168,8 +141,6 @@ class _AccountPageState extends State<AccountPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                _buildDarkModeSwitch(context),
-                Divider(height: 1, color: cs.outlineVariant),
                 _buildImmatriculationListTile(context),
                 Divider(height: 1, color: cs.outlineVariant),
                 _buildGeneratePDFButton(context),
