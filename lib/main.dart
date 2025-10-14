@@ -143,26 +143,19 @@ class _RootTabsState extends State<_RootTabs> {
     }
   }
 
-  void _deleteEntretien(String id) => sm.get<EntretienService>().delete(id);
-  void _updateEntretien(Entretien e) => sm.get<EntretienService>().update(e);
-
-  void _deleteCompteur(String id) => sm.get<CompteurService>().delete(id);
-  void _updateCompteur(Compteur c) => sm.get<CompteurService>().update(c);
-
   @override
   Widget build(BuildContext context) {
     final colorMap = colorMapFromTheme(context);
     final entretienSvc = sm.get<EntretienService>();
     final compteurSvc = sm.get<CompteurService>();
 
-    // On écoute les 2 services pour reconstruire UI quand leurs listes changent
     return AnimatedBuilder(
       animation: Listenable.merge([entretienSvc, compteurSvc]),
       builder: (_, __) {
         final entListWidget =
-        EntretienList(entretienSvc.items, _deleteEntretien, _updateEntretien);
+        EntretienList(entretienSvc.items);
         final compteurListWidget =
-        CompteurList(compteurSvc.items, _deleteCompteur, _updateCompteur, colorMap);
+        CompteurList(compteurSvc.items, colorMap);
 
         final pages = <Widget>[
           my_home.MyHomePage(

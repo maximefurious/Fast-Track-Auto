@@ -23,7 +23,6 @@ class EntretienItem extends StatefulWidget {
 }
 
 class _EntretienItemState extends State<EntretienItem> {
-  // Optionnel: garder ces valeurs en local pour l'édition
   late int editKilometrage;
   late double editPrix;
   late String editType;
@@ -150,8 +149,6 @@ class _EntretienItemState extends State<EntretienItem> {
                   showDialog(
                     context: context,
                     builder: (ctx) => DeleteEntretienAlertDialog(
-                      // colorMap supprimé: le dialog doit aussi lire Theme.of(context)
-                      ctx: ctx,
                       entretien: widget.entretien,
                       deleteEntretien: widget.deleteEnt,
                     ),

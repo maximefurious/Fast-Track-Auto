@@ -84,7 +84,6 @@ class DetailEntretienAlertDialog extends StatelessWidget {
             showDialog(
               context: context,
               builder: (ctx) => UpdateEntretienAlertDialog(
-                // version sans colorMap/ctx (à patcher aussi)
                 entretien: entretien,
                 editKilometrage: editKilometrage,
                 editPrix: editPrix,

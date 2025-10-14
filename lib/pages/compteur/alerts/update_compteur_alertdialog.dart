@@ -6,109 +6,79 @@ import 'package:furious_app/widget/formfield/custom_edit_text_form_field.dart';
 import 'package:intl/intl.dart';
 
 class UpdateCompteurAlertDialog extends StatelessWidget {
-  final BuildContext context;
-  final Map<String, Color> colorMap;
+  const UpdateCompteurAlertDialog({
+    super.key,
+    required this.updateCompteur,
+    required this.editKilometrage,
+    required this.editKilometrageParcouru,
+    required this.editMoyConsommation,
+    required this.selectedDate,
+    required this.compteur,
+    required this.dateController,
+  });
 
+  final Compteur compteur;
   final int editKilometrage;
   final int editKilometrageParcouru;
   final double editMoyConsommation;
   final DateTime selectedDate;
-
   final TextEditingController dateController;
 
-  final Compteur compteur;
-
-  final Function updateCompteur;
-
-  const UpdateCompteurAlertDialog({
-    super.key,
-      required this.colorMap,
-      required this.updateCompteur,
-      required this.editKilometrage,
-      required this.editKilometrageParcouru,
-      required this.editMoyConsommation,
-      required this.selectedDate,
-      required this.compteur,
-      required this.dateController,
-      required this.context
-  });
+  final void Function(Compteur e) updateCompteur;
 
   @override
   Widget build(BuildContext context) {
-    int editKilometrage = this.editKilometrage;
-    int editKilometrageParcouru = this.editKilometrageParcouru;
-    double editMoyConsommation = this.editMoyConsommation;
-    DateTime selectedDate = this.selectedDate;
+    final cs = Theme.of(context).colorScheme;
 
-    void presentDatePicker() {
-      showDatePicker(
+    int km = editKilometrage;
+    int kmParcouru = editKilometrageParcouru;
+    double moyConso = editMoyConsommation;
+    DateTime date = selectedDate;
+
+    Future<void> presentDatePicker() async {
+      final picked = await showDatePicker(
         context: context,
-        initialDate: selectedDate,
+        initialDate: date,
         firstDate: DateTime(2019),
         lastDate: DateTime.now(),
-        builder: (BuildContext context, Widget? child) {
-          return Theme(
-            data: ThemeData.dark().copyWith(
-              primaryColor: colorMap['primaryColor'],
-              textSelectionTheme: TextSelectionThemeData(
-                selectionColor: colorMap['primaryColor'],
-              ),
-              colorScheme: ColorScheme.dark(
-                primary: colorMap['primaryColor']!,
-                onPrimary: colorMap['textFieldColor']!,
-                surface: colorMap['background']!,
-                onSurface: colorMap['text']!,
-              ), dialogTheme: DialogThemeData(backgroundColor: colorMap['cardColor']),
-            ),
-            child: child!,
-          );
-        },
-      ).then((pickedDate) {
-        if (pickedDate == null) {
-          return;
-        }
-        selectedDate = pickedDate;
-        dateController.text = DateFormat('dd/MM/yyyy').format(selectedDate);
-      });
+      );
+      if (picked != null) {
+        date = picked;
+        dateController.text = DateFormat('dd/MM/yyyy').format(date);
+      }
     }
 
     return AlertDialog(
-      backgroundColor: colorMap['cardColor'],
-      title: CustomCarnetText(
-        color: colorMap['text']!,
-        text: 'Modifier',
-        isBold: true,
-      ),
+      backgroundColor: cs.surface,
+      title: CustomCarnetText(color: cs.primary, text: 'Modifier', isBold: true,),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           CustomEditTextFormField(
             initialValue: compteur.kilometrage.toString(),
             labelText: 'Kilométrage',
-            color: colorMap['text']!,
+            color: cs.onSurface,
             keyboardType: TextInputType.number,
-            onChangedCallback: (value) => editKilometrage = int.parse(value),
+            onChangedCallback: (value) => km = int.parse(value),
           ),
           CustomEditTextFormField(
             initialValue: compteur.kilometrageParcouru.toString(),
             labelText: 'kilométrage parcouru',
-            color: colorMap['text']!,
+            color: cs.onSurface,
             keyboardType: TextInputType.number,
-            onChangedCallback: (value) =>
-                editKilometrageParcouru = int.parse(value),
+            onChangedCallback: (value) => kmParcouru = int.parse(value),
           ),
           CustomEditTextFormField(
             initialValue: compteur.moyConsommation.toString(),
             labelText: 'Consommation',
-            color: colorMap['text']!,
+            color: cs.onSurface,
             keyboardType: TextInputType.number,
-            onChangedCallback: (value) =>
-                editMoyConsommation = double.parse(value),
+            onChangedCallback: (value) => moyConso = double.parse(value),
           ),
           CustomEditDateFormField(
             controller: dateController,
             labelText: 'Date',
-            color: colorMap['text']!,
+            color: cs.onSurface,
             onTapCallback: presentDatePicker,
           ),
         ],
@@ -116,28 +86,22 @@ class UpdateCompteurAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const CustomCarnetText(
-            color: Colors.red,
-            text: 'Annuler',
-            isBold: true,
-          ),
+          child: CustomCarnetText(color: cs.error, text: 'Annuler', isBold: true,),
         ),
         TextButton(
           onPressed: () {
-            updateCompteur(
-              compteur.id,
-              editKilometrage,
-              selectedDate,
-              editKilometrageParcouru,
-              editMoyConsommation,
+            final updated = compteur.copyWith(
+              kilometrage: km,
+              kilometrageParcouru: kmParcouru,
+              moyConsommation: moyConso,
+              date: selectedDate,
             );
+
+
+            updateCompteur(updated);
             Navigator.of(context).pop();
           },
-          child: const CustomCarnetText(
-            color: Colors.green,
-            text: 'Modifier',
-            isBold: true,
-          ),
+          child: CustomCarnetText(color: cs.primary, text: 'Modifier', isBold: true,),
         ),
       ],
     );

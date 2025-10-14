@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/pages/compteur/alerts/update_compteur_alertdialog.dart';
 import 'package:furious_app/widget/custom_text/custom_carnet_text.dart';
+import 'package:intl/intl.dart';
 
 class DetailCompteurAlertDialog extends StatelessWidget {
-  final BuildContext context;
-  final Map<String, Color> colorMap;
+  const DetailCompteurAlertDialog({
+    super.key,
+    required this.compteur,
+    required this.selectedDate,
+    required this.editKilometrage,
+    required this.editKilometrageParcouru,
+    required this.editMoyConsommation,
+    required this.updateCompteur,
+    required this.dateController
+  });
+
+  final Compteur compteur;
 
   final int editKilometrage;
   final int editKilometrageParcouru;
@@ -14,34 +25,18 @@ class DetailCompteurAlertDialog extends StatelessWidget {
 
   final TextEditingController dateController;
 
-  final Compteur compteur;
+  final void Function(Compteur e) updateCompteur;
 
-  final Function updateCompteur;
-
-  const DetailCompteurAlertDialog({
-    super.key,
-      required this.colorMap,
-      required this.compteur,
-      required this.selectedDate,
-      required this.context,
-      required this.editKilometrage,
-      required this.editKilometrageParcouru,
-      required this.editMoyConsommation,
-      required this.updateCompteur,
-      required this.dateController
-  });
+  String _formatDate(DateTime d) => DateFormat('dd/MM/yyyy').format(d);
 
   @override
   Widget build(BuildContext context) {
-    int editKilometrage = this.editKilometrage;
-    int editKilometrageParcouru = this.editKilometrageParcouru;
-    double editMoyConsommation = this.editMoyConsommation;
-    DateTime selectedDate = this.selectedDate;
+    final cs = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      backgroundColor: colorMap['cardColor'],
-      title: const CustomCarnetText(
-        color: Colors.green,
+      backgroundColor: cs.surface,
+      title: CustomCarnetText(
+        color: cs.primary,
         text: 'Détails du relever',
         isBold: true,
       ),
@@ -50,55 +45,26 @@ class DetailCompteurAlertDialog extends StatelessWidget {
         children: [
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Kilométrage : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: '${compteur.kilometrage} Km',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Kilométrage : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: '${compteur.kilometrage} Km'),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Consommation : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: '${compteur.moyConsommation} L/100Km',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Consommation : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: '${compteur.moyConsommation} L/100Km'),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'kilométrage parcouru : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: '${compteur.kilometrageParcouru} km',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'kilométrage parcouru : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: '${compteur.kilometrageParcouru} km'),
             ],
           ),
           Row(
             children: [
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text: 'Date : ',
-                isBold: true,
-              ),
-              CustomCarnetText(
-                color: colorMap['text']!,
-                text:
-                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-              ),
+              CustomCarnetText(color: cs.onSurface, text: 'Date : ', isBold: true),
+              CustomCarnetText(color: cs.onSurface, text: _formatDate(selectedDate)),
             ],
           ),
         ],
@@ -106,8 +72,8 @@ class DetailCompteurAlertDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const CustomCarnetText(
-            color: Colors.red,
+          child: CustomCarnetText(
+            color: cs.error,
             text: 'Fermer',
             isBold: true,
           ),
@@ -118,7 +84,6 @@ class DetailCompteurAlertDialog extends StatelessWidget {
             showDialog(
               context: context,
               builder: (ctx) => UpdateCompteurAlertDialog(
-                colorMap: colorMap,
                 updateCompteur: updateCompteur,
                 editKilometrage: editKilometrage,
                 editKilometrageParcouru: editKilometrageParcouru,
@@ -126,12 +91,11 @@ class DetailCompteurAlertDialog extends StatelessWidget {
                 selectedDate: selectedDate,
                 compteur: compteur,
                 dateController: dateController,
-                context: ctx,
               ),
             );
           },
-          child: const CustomCarnetText(
-            color: Colors.green,
+          child: CustomCarnetText(
+            color: cs.primary,
             text: 'Modifier',
             isBold: true,
           ),

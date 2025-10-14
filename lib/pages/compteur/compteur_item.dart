@@ -14,29 +14,43 @@ class CompteurItem extends StatefulWidget {
     required this.compteur,
     required this.deleteCompteur,
     required this.updateCompteur,
-    required this.colorMap,
   });
 
-  final Function deleteCompteur;
-  final Function updateCompteur;
   final Compteur compteur;
-  final Map<String, Color> colorMap;
+  final void Function(String id) deleteCompteur;
+  final void Function(Compteur c) updateCompteur;
 
   @override
   State<CompteurItem> createState() => _CompteurItemState();
 }
 
 class _CompteurItemState extends State<CompteurItem> {
-  late final TextEditingController dateController;
+  late int editKilometrage;
+  late double editMoyConsommation;
+  late int editKilometrageParcouru;
   late DateTime selectedDate;
+  late final TextEditingController dateController;
 
   @override
   void initState() {
     super.initState();
+    editKilometrage = widget.compteur.kilometrage;
+    editMoyConsommation = widget.compteur.moyConsommation;
+    editKilometrageParcouru = widget.compteur.kilometrageParcouru;
     selectedDate = widget.compteur.date;
-    dateController = TextEditingController(
-      text: DateFormat('dd/MM/yyyy').format(widget.compteur.date),
-    );
+    dateController = TextEditingController(text: _formatDate(widget.compteur.date));
+  }
+
+  @override
+  void didUpdateWidget(covariant CompteurItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.compteur != widget.compteur) {
+      editKilometrage = widget.compteur.kilometrage;
+      editMoyConsommation = widget.compteur.moyConsommation;
+      editKilometrageParcouru = widget.compteur.kilometrageParcouru;
+      selectedDate = widget.compteur.date;
+      dateController.text = _formatDate(widget.compteur.date);
+    }
   }
 
   @override
@@ -45,27 +59,21 @@ class _CompteurItemState extends State<CompteurItem> {
     super.dispose();
   }
 
+  String _formatDate(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
+
   @override
   Widget build(BuildContext context) {
-    // Couleurs avec valeurs de repli pour éviter les null
-    final scheme = Theme.of(context).colorScheme;
-    final textColor = widget.colorMap['text'] ?? scheme.onSurface;
-    final cardColor = widget.colorMap['cardColor'] ?? scheme.surface;
-
-    // Copie locale pour l’édition
-    int editKilometrage = widget.compteur.kilometrage;
-    double editMoyConsommation = widget.compteur.moyConsommation;
-    int editKilometrageParcouru = widget.compteur.kilometrageParcouru;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final text = theme.textTheme;
 
     return GestureDetector(
       onTap: () {
         showDialog(
           context: context,
           builder: (ctx) => DetailCompteurAlertDialog(
-            colorMap: widget.colorMap,
             compteur: widget.compteur,
             selectedDate: selectedDate,
-            context: ctx,
             editKilometrage: editKilometrage,
             editKilometrageParcouru: editKilometrageParcouru,
             editMoyConsommation: editMoyConsommation,
@@ -78,52 +86,57 @@ class _CompteurItemState extends State<CompteurItem> {
         elevation: 10,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: cs.surface,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: cardColor,
+            color: cs.surface,
           ),
           padding: const EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Colonne textes
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomListItemText(
-                    color: textColor,
+                    color: text.titleMedium?.color ?? cs.onSurface,
                     text: '${widget.compteur.kilometrage} Km',
                     isBig: true,
                     isBold: true,
                   ),
-                  CustomListItemText(
-                    color: textColor,
-                    text: '${widget.compteur.kilometrageParcouru} Km parcouru',
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(selectedDate),
+                    style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   ),
-                  CustomListItemText(
-                    color: textColor,
-                    text: '${widget.compteur.moyConsommation} L/100Km',
+                  const SizedBox(height: 2),
+                  Text(
+                    '${widget.compteur.kilometrageParcouru} Km parcouru',
+                    style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${widget.compteur.moyConsommation} L/100Km',
+                    style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ],
               ),
 
-              // Bouton supprimer
               IconButton(
                 onPressed: () {
                   showDialog(
                     context: context,
                     builder: (ctx) => DeleteCompteurAlertDialog(
-                      colorMap: widget.colorMap,
                       compteur: widget.compteur,
                       deleteCompteur: widget.deleteCompteur,
-                      ctx: ctx,
                     ),
                   );
                 },
                 icon: const Icon(Icons.delete),
-                color: scheme.error,
+                color: cs.error,
                 iconSize: MediaQuery.of(context).size.width * 0.08,
+                tooltip: 'Supprimer',
               ),
             ],
           ),

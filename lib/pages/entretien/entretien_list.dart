@@ -1,13 +1,17 @@
+
 import 'package:flutter/material.dart';
 import 'package:furious_app/pages/entretien/entretien_item.dart';
+import 'package:furious_app/services/impl/entretien_service.dart';
+import 'package:furious_app/services/service_manager.dart';
 import '../../models/entretien.dart';
 
 class EntretienList extends StatelessWidget {
   final List<Entretien> entretienList;
-  final void Function(String id) onDelete;
-  final void Function(Entretien e) onUpdate;
 
-  const EntretienList(this.entretienList, this.onDelete, this.onUpdate, {super.key,});
+  const EntretienList(this.entretienList, {super.key,});
+
+  void _deleteEntretien(String id) => ServiceManager.instance.get<EntretienService>().delete(id);
+  void _updateEntretien(Entretien e) => ServiceManager.instance.get<EntretienService>().update(e);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,6 @@ class EntretienList extends StatelessWidget {
               'Aucun entretien',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                // onSurface = couleur de texte par défaut pour un fond surface
                 color: theme.textTheme.titleMedium?.color ?? cs.onSurface,
               ),
             ),
@@ -48,9 +51,8 @@ class EntretienList extends StatelessWidget {
         return EntretienItem(
           key: ValueKey(ent.id),
           entretien: ent,
-          deleteEnt: onDelete,
-          updateEntretien: onUpdate,
-          // plus de colorMap ici
+          deleteEnt: _deleteEntretien,
+          updateEntretien: _updateEntretien,
         );
       },
     );

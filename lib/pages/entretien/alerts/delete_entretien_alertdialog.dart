@@ -7,7 +7,6 @@ class DeleteEntretienAlertDialog extends StatelessWidget {
     super.key,
     required this.entretien,
     required this.deleteEntretien,
-    required BuildContext ctx,
   });
 
   final Entretien entretien;

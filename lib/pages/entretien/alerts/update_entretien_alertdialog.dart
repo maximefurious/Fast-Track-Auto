@@ -24,7 +24,6 @@ class UpdateEntretienAlertDialog extends StatelessWidget {
   final DateTime selectedDate;
   final TextEditingController dateController;
 
-  // CHANGE: expects an Entretien
   final void Function(Entretien e) updateEntretien;
 
   @override
