@@ -110,20 +110,16 @@ class CarInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: BoxInfoWidget(
-                  icon: Icons.text_snippet,
-                  title: 'Kilométrage',
-                  value: '$maxKilometrage Km',
-                ),
+              BoxInfoWidget(
+                icon: Icons.text_snippet,
+                title: 'Kilométrage',
+                value: '$maxKilometrage Km',
               ),
               const SizedBox(width: 10),
-              Expanded(
-                child: BoxInfoWidget(
-                  icon: Icons.bar_chart_sharp,
-                  title: 'Consommation moyenne',
-                  value: '$consoMoyenneStr L/100Km',
-                ),
+              BoxInfoWidget(
+                icon: Icons.bar_chart_sharp,
+                title: 'Consommation moyenne',
+                value: '$consoMoyenneStr L/100Km',
               ),
             ],
           ),

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+
 import 'package:furious_app/models/compteur.dart';
 import 'package:furious_app/models/entretien.dart';
 import 'package:furious_app/methods/mobile.dart';
-
-import '../services/impl/pdf_report_service.dart';
-import '../services/service_manager.dart';
+import 'package:furious_app/services/impl/pdf_report_service.dart';
+import 'package:furious_app/services/service_manager.dart';
+import 'package:furious_app/services/impl/session.dart';
+import 'package:furious_app/widget/auth/auth_dialog.dart';
+import 'package:furious_app/widget/vehicle/create_vehicle_form.dart';
+import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
-  final Function setImmatriculation; // attend (String)
+  final Function setImmatriculation; // (String) — conservé si besoin
   final Function updateData;
 
   final List<Entretien> _entretienList;
@@ -29,15 +33,6 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  final _formKey = GlobalKey<FormState>();
-  String newImmatriculation = '';
-
-  void   _submitImmatriculation(String value) {
-    widget.setImmatriculation(value);
-    widget.updateData();
-    Navigator.of(context).pop();
-  }
-
   TextStyle _tileTextStyle(BuildContext context) {
     final theme = Theme.of(context);
     return theme.textTheme.bodyLarge!.copyWith(
@@ -46,58 +41,86 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  ListTile _buildImmatriculationListTile(BuildContext context) {
+  Future<void> _openAuthDialog() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AuthDialog(
+        baseUrl: 'http://147.79.118.75:5000', // adapte ici
+        onDone: (AuthResult res) {
+        // Tu récupères ici userId/token/isLogin
+        // Exemple: context.read<AuthService>().save(res);
+        // print('AuthResult: $res');
+        },
+      )
+    );
+    if (ok == true && mounted) setState(() {}); // rafraîchir l’affichage (userId)
+  }
+
+  Future<void> _openCreateVehicleSheet() async {
+    if (!Session.instance.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter d’abord.')),
+      );
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (_) => AuthDialog(
+          baseUrl: 'http://147.79.118.75:5000', // adapte ici
+            onDone: (AuthResult res) {
+              // Tu récupères ici userId/token/isLogin
+              // Exemple: context.read<AuthService>().save(res);
+              // print('AuthResult: $res');
+            },
+          ),
+      );
+      if (ok != true) return;
+    }
+
+    final created = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const CreateVehicleForm(),
+    );
+
+    if (created == true) {
+      widget.updateData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Véhicule créé avec succès')),
+        );
+      }
+    }
+  }
+
+  ListTile _buildAuthTile(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final immat = (widget.vehiculeMap['immatriculation'] ?? 'Inconnue').toString();
+    final userId = Session.instance.userId;
+    final isConnected = userId != null;
 
     return ListTile(
-      title: Text('Immatriculation', style: _tileTextStyle(context)),
+      title: Text(isConnected ? 'Connecté' : 'Connexion / Inscription', style: _tileTextStyle(context)),
+      subtitle: isConnected
+          ? Text('Utilisateur: $userId', style: TextStyle(color: cs.onSurfaceVariant))
+          : const Text('Authentifiez-vous pour gérer vos véhicules'),
       tileColor: cs.surface,
-      trailing: Text(immat, style: _tileTextStyle(context)),
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext ctx) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              title: Text('Immatriculation', style: _tileTextStyle(ctx)),
-              backgroundColor: cs.surface,
-              content: Form(
-                key: _formKey,
-                child: TextFormField(
-                  initialValue: immat,
-                  style: _tileTextStyle(ctx),
-                  decoration: InputDecoration(
-                    hintText: 'Immatriculation',
-                    hintStyle: _tileTextStyle(ctx).copyWith(
-                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: cs.outline),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: cs.primary),
-                    ),
-                  ),
-                  onChanged: (value) => newImmatriculation = value,
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  style: TextButton.styleFrom(foregroundColor: cs.onSurface),
-                  child: Text('Annuler', style: _tileTextStyle(ctx)),
-                  onPressed: () => Navigator.of(ctx).pop(),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(foregroundColor: cs.primary),
-                  child: Text('Valider', style: _tileTextStyle(ctx)),
-                  onPressed: () => _submitImmatriculation(newImmatriculation),
-                ),
-              ],
-            );
-          },
-        );
+      trailing: Icon(isConnected ? Icons.verified_user : Icons.login, color: cs.primary),
+      onTap: _openAuthDialog,
+      onLongPress: () {
+        // astuce: long press pour se déconnecter rapidement (dev)
+        Session.instance.clear();
+        setState(() {});
       },
+    );
+  }
+
+  ListTile _buildCreateVehicleTile(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final enabled = Session.instance.isAuthenticated;
+    return ListTile(
+      title: Text('Ajouter un véhicule', style: _tileTextStyle(context)),
+      subtitle: enabled ? null : Text('Requiert une connexion', style: TextStyle(color: cs.onSurfaceVariant)),
+      tileColor: cs.surface,
+      trailing: Icon(Icons.directions_car_filled, color: enabled ? cs.primary : cs.onSurfaceVariant),
+      onTap: enabled ? _openCreateVehicleSheet : _openAuthDialog,
     );
   }
 
@@ -141,11 +164,11 @@ class _AccountPageState extends State<AccountPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                _buildImmatriculationListTile(context),
+                _buildAuthTile(context),
+                Divider(height: 1, color: cs.outlineVariant),
+                _buildCreateVehicleTile(context),
                 Divider(height: 1, color: cs.outlineVariant),
                 _buildGeneratePDFButton(context),
-                // Divider(height: 1, color: cs.outlineVariant),
-                // _buildBluetoothConnexion(),
               ],
             ),
           ),
