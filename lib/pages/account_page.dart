@@ -8,7 +8,6 @@ import 'package:furious_app/services/service_manager.dart';
 import 'package:furious_app/services/impl/session.dart';
 import 'package:furious_app/widget/auth/auth_dialog.dart';
 import 'package:furious_app/widget/vehicle/create_vehicle_form.dart';
-import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
   final Function setImmatriculation; // (String) — conservé si besoin
@@ -45,15 +44,13 @@ class _AccountPageState extends State<AccountPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AuthDialog(
-        baseUrl: 'http://147.79.118.75:5000', // adapte ici
-        onDone: (AuthResult res) {
-        // Tu récupères ici userId/token/isLogin
-        // Exemple: context.read<AuthService>().save(res);
-        // print('AuthResult: $res');
+        baseUrl: 'http://147.79.118.75:5000',
+        onDone: (AuthResult res) async {
+          await Session.instance.saveAuth(res);
         },
-      )
+      ),
     );
-    if (ok == true && mounted) setState(() {}); // rafraîchir l’affichage (userId)
+    if (ok == true && mounted) setState(() {}); // rafraîchit l'affichage
   }
 
   Future<void> _openCreateVehicleSheet() async {
@@ -64,13 +61,11 @@ class _AccountPageState extends State<AccountPage> {
       final ok = await showDialog<bool>(
         context: context,
         builder: (_) => AuthDialog(
-          baseUrl: 'http://147.79.118.75:5000', // adapte ici
-            onDone: (AuthResult res) {
-              // Tu récupères ici userId/token/isLogin
-              // Exemple: context.read<AuthService>().save(res);
-              // print('AuthResult: $res');
-            },
-          ),
+          baseUrl: 'http://147.79.118.75:5000',
+          onDone: (AuthResult res) async {
+            await Session.instance.saveAuth(res);
+          },
+        ),
       );
       if (ok != true) return;
     }

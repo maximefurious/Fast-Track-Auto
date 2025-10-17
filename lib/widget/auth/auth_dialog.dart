@@ -1,22 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:furious_app/services/impl/api_client.dart';
+import 'package:furious_app/services/impl/session.dart';
 import 'package:http/http.dart' as http;
-
-/// MODELE — si tu as déjà un modèle, importe-le à la place
-class AuthResult {
-  final String userId;
-  final String token;   // Pas de vrai token ici (backend non fourni), on laisse vide
-  final bool isLogin;   // true: login, false: signup
-
-  AuthResult({
-    required this.userId,
-    required this.token,
-    required this.isLogin,
-  });
-
-  @override
-  String toString() => 'AuthResult(userId: $userId, token: $token, isLogin: $isLogin)';
-}
 
 class AuthDialog extends StatefulWidget {
   const AuthDialog({
@@ -53,15 +40,15 @@ class _AuthDialogState extends State<AuthDialog> {
     super.dispose();
   }
 
-  Uri _usersUri() => Uri.parse('${widget.baseUrl}/api/users/');
-
   /// Appelle POST /api/users/ pour créer un utilisateur
-  Future<AuthResult> _signup(String email, {String? fullName}) async {
+  Future<AuthResult> _signup(String email, String password, {String? fullName}) async {
+    final uri = Uri.parse('${ApiClient.baseUrl}${ApiClient.registerPath}/');
     final resp = await http.post(
-      _usersUri(),
+      uri,
       headers: const {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
+        'password': password,
         if (fullName != null && fullName.trim().isNotEmpty) 'full_name': fullName.trim(),
       }),
     );
@@ -94,11 +81,67 @@ class _AuthDialogState extends State<AuthDialog> {
 
   /// Connexion: sans endpoint /auth/login ou /users?email=..., on ne peut pas terminer.
   Future<AuthResult> _login(String email, String password) async {
-    // Ici, on indique clairement le manque côté backend.
-    throw Exception(
-      'Aucun endpoint de connexion disponible. '
-          'Expose /auth/login (POST email/mot_de_passe) ou /users?email=... pour récupérer l’utilisateur.',
-    );
+    final uri = Uri.parse('${ApiClient.baseUrl}${ApiClient.loginPath}/');
+
+    // Validation côté client (évite un aller-retour inutile)
+    final trimmedEmail = email.trim();
+    if (trimmedEmail.isEmpty || password.isEmpty) {
+      throw Exception('Email et mot de passe sont requis.');
+    }
+
+    try {
+      final resp = await http.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': trimmedEmail,
+          'password': password,
+        }),
+      )
+          .timeout(const Duration(seconds: 15));
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        final userId = (data['user_id'] ?? data['id'] ?? '').toString();
+        final token = (data['token'] ?? '').toString();
+
+        if (userId.isEmpty || token.isEmpty) {
+          throw Exception('Réponse serveur invalide: user_id ou token manquant.');
+        }
+
+        return AuthResult(
+          userId: userId,
+          token: token,
+          isLogin: true,
+        );
+      }
+
+      // Gestion des erreurs usuelles renvoyées par le backend
+      // 400: champs manquants / invalides, 401: identifiants invalides
+      try {
+        final body = jsonDecode(resp.body);
+        final serverMsg = (body is Map && body['error'] != null)
+            ? body['error'].toString()
+            : resp.body;
+
+        if (resp.statusCode == 400) {
+          throw Exception('Requête invalide: $serverMsg');
+        }
+        if (resp.statusCode == 401) {
+          throw Exception('Identifiants invalides.');
+        }
+
+        throw Exception('Erreur serveur (${resp.statusCode}): $serverMsg');
+      } catch (_) {
+        throw Exception('Erreur serveur (${resp.statusCode}).');
+      }
+    } on http.ClientException catch (e) {
+      throw Exception('Erreur réseau: ${e.message}');
+    } on FormatException {
+      throw Exception('Réponse serveur illisible (JSON invalide).');
+    } on TimeoutException {
+      throw Exception('Délai dépassé. Vérifie ta connexion réseau et l’URL de l’API.');
+    }
   }
 
   Future<void> _submit() async {
@@ -119,7 +162,7 @@ class _AuthDialogState extends State<AuthDialog> {
       if (_isLogin) {
         result = await _login(email, password);
       } else {
-        result = await _signup(email, fullName: fullName);
+        result = await _signup(email, password, fullName: fullName);
       }
 
       // Notifie l’appelant puis ferme le dialog avec un bool (true)

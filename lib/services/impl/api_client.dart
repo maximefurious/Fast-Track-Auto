@@ -5,8 +5,8 @@ class ApiClient {
   // Adapte pour ton backend
   static const String baseUrl = 'http://147.79.118.75:5000';
   static const String vehiclesPath = '/api/vehicles';
+  static const String registerPath = '/api/users';
   static const String loginPath = '/api/login';
-  static const String registerPath = '/api/register';
 
   static Uri _u(String path) => Uri.parse('$baseUrl$path');
 
